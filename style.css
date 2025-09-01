@@ -1,0 +1,46 @@
+:root {
+  --bg: #0b1220;
+  --panel: #111a2b;
+  --ink: #e9eef7;
+  --muted: #9fb0cc;
+  --accent: #4aa3ff;
+  --line: #24324c;
+  --ok: #24d17e;
+  --warn: #ffb020;
+  --error: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+header h1 { margin: 8px 0 4px; font-size: 28px; }
+.sub { color: var(--muted); margin: 0 0 8px; }
+.grid { display: grid; gap: 16px; grid-template-columns: 1.2fr 1fr; }
+@media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+h2 { margin: 8px 0 8px; font-size: 18px; }
+label { display: block; margin: 8px 0; color: var(--muted); }
+input[type="number"] { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: #0e1728; color: var(--ink); }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+button {
+  background: var(--accent); color: #061022; border: none; padding: 10px 12px;
+  border-radius: 12px; cursor: pointer; font-weight: 600; box-shadow: 0 1px 0 rgba(255,255,255,.08) inset;
+}
+button:hover { filter: brightness(1.05); }
+button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+.hint { color: var(--muted); font-size: 13px; margin: 6px 0 12px; }
+.readout { background: #0e1728; border: 1px dashed var(--line); border-radius: 12px; padding: 10px; color: var(--muted); }
+.results { background: #0e1728; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; }
+.small { font-size: 12px; color: var(--muted); }
+
+#videoContainer { position: relative; background: #060c17; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+#video { display: block; width: 100%; height: auto; background: black; }
+#overlay {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: auto;
+}
+#status { margin-top: 8px; color: var(--muted); min-height: 1.2em; }
+
+.marker { width: 10px; height: 10px; border-radius: 50%; }
