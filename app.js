@@ -1,191 +1,222 @@
-/* app.js
-   Client-side calculator for:
-   v0 = (e^(k_x * x(t)) - 1) / (k_x * t * cos(theta))
-
-   - Everything runs locally in the user's browser (no server).
-   - Edit the UI default values in index.html, or change defaultKx below.
-   - The UI also includes a visible kx input; if you prefer to "hardcode" kx,
-     set defaultKx and optionally hide the input in index.html/CSS.
+/* app.js — Defensive version with debugging & user-visible errors
+   Replace your existing app.js with this file.
+   Key improvements:
+   - Waits for DOMContentLoaded before grabbing elements.
+   - Validates all required DOM elements exist and shows a clear message if not.
+   - Catches runtime errors and prints them to console + the on-page error box.
+   - Adds a small "debug" output in console to show input values.
+   - Keeps original formula and conversions.
 */
 
-/* -------------------------
-   Config / default constants
-   -------------------------
-   If you want to hardcode kx in the source file instead of the input,
-   update `defaultKx` and (optionally) remove or hide the kx input from index.html.
-*/
-const defaultKx = 0.05; // <-- placeholder: replace this with your measured k_x if desired
+/* ------------ Utility / config ------------ */
+const defaultKx = 0.05; // placeholder — change to your measured k_x if you wish
 
-/* -------------------------
-   DOM element references
-   ------------------------- */
-const el = {
-  distance: document.getElementById('inputDistance'),
-  time: document.getElementById('inputTime'),
-  angle: document.getElementById('inputAngle'),
-  kx: document.getElementById('inputKx'),
-
-  btnCalc: document.getElementById('btnCalc'),
-  btnClear: document.getElementById('btnClear'),
-
-  outMps: document.getElementById('outMps'),
-  outKmh: document.getElementById('outKmh'),
-  outMph: document.getElementById('outMph'),
-  outNotes: document.getElementById('outNotes'),
-
-  resultCard: document.getElementById('resultCard'),
-  errorBox: document.getElementById('error'),
-  varSelect: document.getElementById('varSelect'),
-  varExplain: document.getElementById('varExplain')
-};
-
-/* Initialize visible kx input with default fallback */
-if (!el.kx.value) {
-  el.kx.value = defaultKx;
-}
-
-/* Utility formatting helpers */
+// formatting helper
 function fmt(n, dp = 3) {
   if (!isFinite(n)) return '—';
   return Number(n).toFixed(dp);
 }
 
-/* Show/hide helpers */
-function showError(msg) {
-  el.errorBox.textContent = msg;
-  el.errorBox.classList.remove('hidden');
-}
-function hideError() {
-  el.errorBox.textContent = '';
-  el.errorBox.classList.add('hidden');
-}
-function showResults() {
-  el.resultCard.classList.remove('hidden');
-}
-function hideResults() {
-  el.resultCard.classList.add('hidden');
-}
+/* ------------ DOM-ready wrapper ------------ */
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    // Grab elements
+    const el = {
+      distance: document.getElementById('inputDistance'),
+      time: document.getElementById('inputTime'),
+      angle: document.getElementById('inputAngle'),
+      kx: document.getElementById('inputKx'),
+      btnCalc: document.getElementById('btnCalc'),
+      btnClear: document.getElementById('btnClear'),
+      outMps: document.getElementById('outMps'),
+      outKmh: document.getElementById('outKmh'),
+      outMph: document.getElementById('outMph'),
+      outNotes: document.getElementById('outNotes'),
+      resultCard: document.getElementById('resultCard'),
+      errorBox: document.getElementById('error'),
+      varSelect: document.getElementById('varSelect'),
+      varExplain: document.getElementById('varExplain')
+    };
 
-/* Core calculation:
-   v0 = (exp(kx * x) - 1) / (kx * t * cos(theta))
-   All inputs should be numbers; theta must be converted to radians.
-*/
-function calculateV0(x, t, thetaDegrees, kx) {
-  // Convert angle to radians
-  const thetaRad = (Number(thetaDegrees) || 0) * Math.PI / 180;
+    // Check all required elements exist — if any are missing, show error and abort.
+    const missing = Object.entries(el).filter(([k, v]) => v === null).map(([k]) => k);
+    if (missing.length) {
+      const msg = `ERROR: Missing DOM elements: ${missing.join(', ')}. Check that IDs in index.html match those in app.js (case-sensitive).`;
+      console.error(msg);
+      // If we have an error box element, show this; otherwise alert.
+      const errorBox = document.getElementById('error');
+      if (errorBox) {
+        errorBox.classList.remove('hidden');
+        errorBox.textContent = msg;
+      } else {
+        alert(msg);
+      }
+      return; // stop — elements missing
+    }
 
-  // Numerator: exp(kx * x) - 1
-  const numerator = Math.exp(kx * x) - 1;
+    // Init kx input if empty
+    if (!el.kx.value) el.kx.value = defaultKx;
 
-  // Denominator: kx * t * cos(theta)
-  const cosTheta = Math.cos(thetaRad);
-  const denominator = kx * t * cosTheta;
+    // show/hide helpers
+    function showError(msg) {
+      el.errorBox.textContent = msg;
+      el.errorBox.classList.remove('hidden');
+    }
+    function hideError() {
+      el.errorBox.textContent = '';
+      el.errorBox.classList.add('hidden');
+    }
+    function showResults() {
+      el.resultCard.classList.remove('hidden');
+    }
+    function hideResults() {
+      el.resultCard.classList.add('hidden');
+    }
 
-  // Guard against invalid denom (near zero)
-  if (Math.abs(denominator) < 1e-12) {
-    return { error: 'Denominator too small — check t and θ (cos θ should not be 0).' };
-  }
+    // Core calculation function
+    function calculateV0(x, t, thetaDegrees, kx) {
+      const thetaRad = (Number(thetaDegrees) || 0) * Math.PI / 180;
+      const numerator = Math.exp(kx * x) - 1;
+      const cosTheta = Math.cos(thetaRad);
+      const denominator = kx * t * cosTheta;
 
-  const v0 = numerator / denominator;
-  return { v0, numerator, denominator, cosTheta, thetaRad };
-}
+      if (!isFinite(numerator) || !isFinite(denominator)) {
+        return { error: 'Non-finite intermediate result; check inputs.' };
+      }
+      if (Math.abs(denominator) < 1e-12) {
+        return { error: 'Denominator is too small (near zero). Check time t and angle θ.' };
+      }
+      const v0 = numerator / denominator;
+      return { v0, numerator, denominator, cosTheta, thetaRad };
+    }
 
-/* Button handlers */
-el.btnCalc.addEventListener('click', () => {
-  hideError();
+    // Button click handler
+    el.btnCalc.addEventListener('click', () => {
+      try {
+        hideError();
 
-  // Parse inputs
-  const x = Number(el.distance.value);
-  const t = Number(el.time.value);
-  const theta = Number(el.angle.value);
-  const kx = Number(el.kx.value);
+        const x = Number(el.distance.value);
+        const t = Number(el.time.value);
+        const theta = Number(el.angle.value);
+        const kx = Number(el.kx.value);
 
-  // Basic validation — you can add stronger checks if needed
-  if (!isFinite(x) || !isFinite(t) || !isFinite(theta) || !isFinite(kx)) {
-    showError('Please enter valid numeric values for all fields.');
+        // Basic validation
+        if (![x,t,theta,kx].every(v => isFinite(v))) {
+          showError('Please enter valid numeric values for all fields.');
+          hideResults();
+          console.log('Invalid numeric inputs:', {x,t,theta,kx});
+          return;
+        }
+        if (t <= 0) {
+          showError('Time must be > 0 seconds.');
+          hideResults();
+          return;
+        }
+        if (kx === 0) {
+          showError('kₓ must be non-zero for this formula.');
+          hideResults();
+          return;
+        }
+
+        // Debug: echo inputs to console so you can see them quickly
+        console.log('Calculate clicked — inputs:', { x, t, theta, kx });
+
+        // Compute
+        const res = calculateV0(x, t, theta, kx);
+        if (res.error) {
+          showError(res.error);
+          hideResults();
+          console.error('Calculation error:', res.error);
+          return;
+        }
+
+        const v0 = res.v0;
+        const v_kmh = v0 * 3.6;
+        const v_mph = v0 * 2.236936;
+
+        el.outMps.textContent = `${fmt(v0, 3)} m/s`;
+        el.outKmh.textContent = `${fmt(v_kmh, 2)} km/h`;
+        el.outMph.textContent = `${fmt(v_mph, 2)} mph`;
+
+        el.outNotes.innerHTML = `
+          <strong>Notes:</strong> numerator = exp(kₓ·x) − 1 = ${fmt(res.numerator,4)}; cos(θ) = ${fmt(res.cosTheta,4)}.
+          Results sensitive to kₓ and θ measurement errors.
+        `;
+        showResults();
+      } catch (err) {
+        // Catch unexpected runtime errors
+        console.error('Unexpected error in calculation handler:', err);
+        showError('Unexpected error occurred. See console for details.');
+        hideResults();
+      }
+    });
+
+    // Reset handler
+    el.btnClear.addEventListener('click', () => {
+      try {
+        el.distance.value = 5.00;
+        el.time.value = 0.2;
+        el.angle.value = 5;
+        el.kx.value = defaultKx;
+        hideError();
+        hideResults();
+        console.log('Reset values to defaults.');
+      } catch (err) {
+        console.error('Error during reset:', err);
+      }
+    });
+
+    // Variable explanation dropdown (UI)
+    el.varSelect.addEventListener('change', (ev) => {
+      const v = ev.target.value;
+      if (!v) {
+        el.varExplain.textContent = 'Select a variable to see a short explanation.';
+        return;
+      }
+      let text = '';
+      switch (v) {
+        case 'x':
+          text = 'x(t): measured distance travelled by the shuttle (meters). Use same units as kₓ.';
+          break;
+        case 't':
+          text = 't: measured time interval (seconds).';
+          break;
+        case 'theta':
+          text = 'θ: launch angle in degrees relative to horizontal. cos(θ) in denominator reduces speed when θ increases.';
+          break;
+        case 'kx':
+          text = 'kₓ: model constant (1/m). Calibrate experimentally; it crucially affects the result.';
+          break;
+      }
+      el.varExplain.textContent = text;
+    });
+
+    // Keyboard convenience: press Enter inside any input to compute
+    ['inputDistance','inputTime','inputAngle','inputKx'].forEach(id => {
+      const node = document.getElementById(id);
+      if (node) {
+        node.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            el.btnCalc.click();
+          }
+        });
+      }
+    });
+
+    // initial hide
     hideResults();
-    return;
+    hideError();
+
+    console.log('app.js loaded successfully (defensive mode).');
+  } catch (outerErr) {
+    console.error('Fatal error while initializing app.js:', outerErr);
+    const box = document.getElementById('error');
+    if (box) {
+      box.classList.remove('hidden');
+      box.textContent = 'Fatal initialization error — check console for details.';
+    } else {
+      alert('Fatal initialization error — check console for details.');
+    }
   }
-  if (t <= 0) {
-    showError('Time must be > 0 seconds.');
-    hideResults();
-    return;
-  }
-  if (kx === 0) {
-    showError('kₓ must be non-zero for this formula.');
-    hideResults();
-    return;
-  }
-
-  // Run calculation
-  const res = calculateV0(x, t, theta, kx);
-  if (res.error) {
-    showError(res.error);
-    hideResults();
-    return;
-  }
-
-  const v0 = res.v0;
-  // Set outputs & conversions
-  const v_kmh = v0 * 3.6;
-  const v_mph = v0 * 2.236936;
-
-  el.outMps.textContent = `${fmt(v0, 3)} m/s`;
-  el.outKmh.textContent = `${fmt(v_kmh, 2)} km/h`;
-  el.outMph.textContent = `${fmt(v_mph, 2)} mph`;
-
-  // Small note about numeric stability and assumptions
-  el.outNotes.innerHTML = `
-    <strong>Notes:</strong> numerator = exp(kₓ·x) − 1 = ${fmt(res.numerator,4)}; cos(θ) = ${fmt(res.cosTheta,4)}.
-    Results sensitive to kₓ and θ measurement errors. See methodology for validation tips.
-  `;
-
-  showResults();
-});
-
-/* Reset / clear */
-el.btnClear.addEventListener('click', () => {
-  // Reset to defaults found in index.html; if you want different defaults, edit index.html values.
-  el.distance.value = 5.00;
-  el.time.value = 0.2;
-  el.angle.value = 5;
-  el.kx.value = defaultKx;
-  hideError();
-  hideResults();
-});
-
-/* Variable explanation dropdown (select) — small UI behavior */
-el.varSelect.addEventListener('change', (ev) => {
-  const v = ev.target.value;
-  if (!v) {
-    el.varExplain.textContent = 'Select a variable to see a short explanation.';
-    return;
-  }
-  let text = '';
-  switch (v) {
-    case 'x':
-      text = 'x(t): measured distance travelled by the shuttle (meters). Use the same measurement units as kₓ (meters).';
-      break;
-    case 't':
-      text = 't: measured time interval (seconds) during which the shuttle covered distance x(t). Should be > 0.';
-      break;
-    case 'theta':
-      text = 'θ: launch angle (degrees) relative to a horizontal reference. Small angles (near 0°) are common for smashes; cos θ is used in the denominator.';
-      break;
-    case 'kx':
-      text = 'kₓ: model constant (units 1/m). This parameter models exponential decay/growth used in the derivation. Calibrate experimentally or enter a literature / fitted value.';
-      break;
-    default:
-      text = '';
-  }
-  el.varExplain.textContent = text;
-});
-
-/* Small UX: hide results initially */
-hideResults();
-hideError();
-
-/* Optional: expose calculate function to console for debugging / quick checks */
-window._debug_calc = function(x,t,theta,kx){ return calculateV0(x,t,theta,kx); };
-
-/* End of app.js */
+}); // DOMContentLoaded end
