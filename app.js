@@ -1,23 +1,19 @@
-/* app.js — Defensive version with debugging & user-visible errors
+/* app.js — Non-video defensive version (no canvas/video references)
    Replace your existing app.js with this file.
-   Key improvements:
-   - Waits for DOMContentLoaded before grabbing elements.
-   - Validates all required DOM elements exist and shows a clear message if not.
-   - Catches runtime errors and prints them to console + the on-page error box.
-   - Adds a small "debug" output in console to show input values.
-   - Keeps original formula and conversions.
+   This version:
+   - Does NOT reference overlay/video or call getContext().
+   - Validates DOM elements and reports clear errors.
+   - Implements the formula: v0 = (e^(k_x * x) - 1) / (k_x * t * cos(theta))
+   - Has keyboard "Enter" binding, reset button, and variable explanations.
 */
 
-/* ------------ Utility / config ------------ */
 const defaultKx = 0.05; // placeholder — change to your measured k_x if you wish
 
-// formatting helper
 function fmt(n, dp = 3) {
   if (!isFinite(n)) return '—';
   return Number(n).toFixed(dp);
 }
 
-/* ------------ DOM-ready wrapper ------------ */
 document.addEventListener('DOMContentLoaded', () => {
   try {
     // Grab elements
@@ -38,26 +34,25 @@ document.addEventListener('DOMContentLoaded', () => {
       varExplain: document.getElementById('varExplain')
     };
 
-    // Check all required elements exist — if any are missing, show error and abort.
-    const missing = Object.entries(el).filter(([k, v]) => v === null).map(([k]) => k);
+    // Check existence of required elements
+    const missing = Object.entries(el).filter(([k,v]) => v === null).map(([k]) => k);
     if (missing.length) {
-      const msg = `ERROR: Missing DOM elements: ${missing.join(', ')}. Check that IDs in index.html match those in app.js (case-sensitive).`;
+      const msg = `MISSING DOM ELEMENTS: ${missing.join(', ')}. Check IDs in index.html (case-sensitive).`;
       console.error(msg);
-      // If we have an error box element, show this; otherwise alert.
-      const errorBox = document.getElementById('error');
-      if (errorBox) {
-        errorBox.classList.remove('hidden');
-        errorBox.textContent = msg;
+      const box = document.getElementById('error');
+      if (box) {
+        box.classList.remove('hidden');
+        box.textContent = msg;
       } else {
         alert(msg);
       }
-      return; // stop — elements missing
+      return;
     }
 
-    // Init kx input if empty
+    // Initialize kx input if empty
     if (!el.kx.value) el.kx.value = defaultKx;
 
-    // show/hide helpers
+    // Helpers
     function showError(msg) {
       el.errorBox.textContent = msg;
       el.errorBox.classList.remove('hidden');
@@ -73,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.resultCard.classList.add('hidden');
     }
 
-    // Core calculation function
+    // Calculation core
     function calculateV0(x, t, thetaDegrees, kx) {
       const thetaRad = (Number(thetaDegrees) || 0) * Math.PI / 180;
       const numerator = Math.exp(kx * x) - 1;
@@ -84,13 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return { error: 'Non-finite intermediate result; check inputs.' };
       }
       if (Math.abs(denominator) < 1e-12) {
-        return { error: 'Denominator is too small (near zero). Check time t and angle θ.' };
+        return { error: 'Denominator too small (near zero). Check t and θ.' };
       }
-      const v0 = numerator / denominator;
-      return { v0, numerator, denominator, cosTheta, thetaRad };
+
+      return { v0: numerator / denominator, numerator, denominator, cosTheta, thetaRad };
     }
 
-    // Button click handler
+    // Button handlers
     el.btnCalc.addEventListener('click', () => {
       try {
         hideError();
@@ -100,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const theta = Number(el.angle.value);
         const kx = Number(el.kx.value);
 
-        // Basic validation
         if (![x,t,theta,kx].every(v => isFinite(v))) {
           showError('Please enter valid numeric values for all fields.');
           hideResults();
@@ -118,10 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // Debug: echo inputs to console so you can see them quickly
-        console.log('Calculate clicked — inputs:', { x, t, theta, kx });
+        console.log('Inputs:', { x, t, theta, kx });
 
-        // Compute
         const res = calculateV0(x, t, theta, kx);
         if (res.error) {
           showError(res.error);
@@ -134,39 +126,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const v_kmh = v0 * 3.6;
         const v_mph = v0 * 2.236936;
 
-        el.outMps.textContent = `${fmt(v0, 3)} m/s`;
-        el.outKmh.textContent = `${fmt(v_kmh, 2)} km/h`;
-        el.outMph.textContent = `${fmt(v_mph, 2)} mph`;
-
+        el.outMps.textContent = `${fmt(v0,3)} m/s`;
+        el.outKmh.textContent = `${fmt(v_kmh,2)} km/h`;
+        el.outMph.textContent = `${fmt(v_mph,2)} mph`;
         el.outNotes.innerHTML = `
           <strong>Notes:</strong> numerator = exp(kₓ·x) − 1 = ${fmt(res.numerator,4)}; cos(θ) = ${fmt(res.cosTheta,4)}.
-          Results sensitive to kₓ and θ measurement errors.
+          Results sensitive to kₓ and θ errors.
         `;
+
         showResults();
       } catch (err) {
-        // Catch unexpected runtime errors
-        console.error('Unexpected error in calculation handler:', err);
-        showError('Unexpected error occurred. See console for details.');
+        console.error('Unexpected error in calc handler:', err);
+        showError('Unexpected error — see console for details.');
         hideResults();
       }
     });
 
-    // Reset handler
+    // Reset
     el.btnClear.addEventListener('click', () => {
-      try {
-        el.distance.value = 5.00;
-        el.time.value = 0.2;
-        el.angle.value = 5;
-        el.kx.value = defaultKx;
-        hideError();
-        hideResults();
-        console.log('Reset values to defaults.');
-      } catch (err) {
-        console.error('Error during reset:', err);
-      }
+      el.distance.value = 5.00;
+      el.time.value = 0.2;
+      el.angle.value = 5;
+      el.kx.value = defaultKx;
+      hideError();
+      hideResults();
+      console.log('Reset to defaults.');
     });
 
-    // Variable explanation dropdown (UI)
+    // Variable explain select
     el.varSelect.addEventListener('change', (ev) => {
       const v = ev.target.value;
       if (!v) {
@@ -182,16 +169,16 @@ document.addEventListener('DOMContentLoaded', () => {
           text = 't: measured time interval (seconds).';
           break;
         case 'theta':
-          text = 'θ: launch angle in degrees relative to horizontal. cos(θ) in denominator reduces speed when θ increases.';
+          text = 'θ: launch angle (degrees).';
           break;
         case 'kx':
-          text = 'kₓ: model constant (1/m). Calibrate experimentally; it crucially affects the result.';
+          text = 'kₓ: model constant (1/m). Calibrate experimentally.';
           break;
       }
       el.varExplain.textContent = text;
     });
 
-    // Keyboard convenience: press Enter inside any input to compute
+    // Enter key -> calculate
     ['inputDistance','inputTime','inputAngle','inputKx'].forEach(id => {
       const node = document.getElementById(id);
       if (node) {
@@ -204,19 +191,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // initial hide
+    // initial state
     hideResults();
     hideError();
 
-    console.log('app.js loaded successfully (defensive mode).');
-  } catch (outerErr) {
-    console.error('Fatal error while initializing app.js:', outerErr);
+    console.log('app.js loaded (non-video defensive).');
+    // Expose debug function
+    window._debug_calc = (x,t,theta,kx) => calculateV0(x,t,theta,kx);
+  } catch (err) {
+    console.error('Fatal init error in app.js:', err);
     const box = document.getElementById('error');
     if (box) {
       box.classList.remove('hidden');
-      box.textContent = 'Fatal initialization error — check console for details.';
+      box.textContent = 'Fatal initialization error — check console.';
     } else {
-      alert('Fatal initialization error — check console for details.');
+      alert('Fatal initialization error — check console.');
     }
   }
-}); // DOMContentLoaded end
+});
