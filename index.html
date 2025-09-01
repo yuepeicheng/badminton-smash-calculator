@@ -2,84 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Badminton Smash Speed (Video + Calibration)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smash Speed Calculator — Math IA</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="wrap">
-    <h1>Badminton Smash Speed Calculator</h1>
-    <p class="sub">From video + calibration. All processing runs locally in your browser.</p>
+  <header class="wrap header">
+    <div>
+      <h1>Smash Speed Calculator</h1>
+      <p class="subtitle">Compute initial speed v₀ from your measured distance, time, and angle using your IA formula.</p>
+    </div>
+
+    <nav class="nav">
+      <a href="#calculator" class="nav-link">Calculator</a>
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#method" class="nav-link">Methodology</a>
+    </nav>
   </header>
 
-  <main class="wrap grid">
-    <section class="panel">
-      <h2>1) Load Video</h2>
-      <input id="fileInput" type="file" accept="video/*" />
-      <p class="hint">Tip: Pause on a clear frame when clicking points.</p>
+  <main class="wrap grid-main">
 
-      <div id="videoContainer">
-        <video id="video" controls playsinline></video>
-        <canvas id="overlay" aria-label="Click canvas for calibration and shuttle points"></canvas>
+    <!-- CALCULATOR -->
+    <section id="calculator" class="panel">
+      <h2>Calculator</h2>
+
+      <p class="hint">All calculations happen locally in your browser. Enter values (defaults provided). Use the <strong>kₓ</strong> field to set the drag/decay constant — or edit the default in app.js (see comments).</p>
+
+      <div class="form-grid">
+        <label>
+          Distance x(t) &nbsp;<span class="muted">(meters)</span>
+          <input id="inputDistance" type="number" step="0.01" value="5.00" />
+        </label>
+
+        <label>
+          Time t &nbsp;<span class="muted">(seconds)</span>
+          <input id="inputTime" type="number" step="0.001" value="0.2" />
+        </label>
+
+        <label>
+          Angle θ &nbsp;<span class="muted">(degrees)</span>
+          <input id="inputAngle" type="number" step="0.1" value="5" />
+        </label>
+
+        <label>
+          Drag constant kₓ &nbsp;<span class="muted">(1 / m — set from your experiments)</span>
+          <input id="inputKx" type="number" step="0.0001" value="0.05" />
+        </label>
       </div>
-      <div id="status" role="status" aria-live="polite"></div>
+
+      <div class="row">
+        <button id="btnCalc">Calculate v₀</button>
+        <button id="btnClear" class="ghost">Reset</button>
+      </div>
+
+      <div id="resultCard" class="result-card hidden">
+        <div class="result-row"><span>v₀ (m/s):</span><span id="outMps">—</span></div>
+        <div class="result-row"><span>v₀ (km/h):</span><span id="outKmh">—</span></div>
+        <div class="result-row"><span>v₀ (mph):</span><span id="outMph">—</span></div>
+        <div class="small muted" id="outNotes"></div>
+      </div>
+
+      <div id="error" class="error hidden" role="alert"></div>
     </section>
 
-    <section class="panel">
-      <h2>2) Calibrate Distance</h2>
-      <label>
-        Known distance (meters)
-        <input id="knownMeters" type="number" step="0.01" placeholder="e.g., 5.18 (singles width)" />
-      </label>
-      <div class="row">
-        <button id="btnCalibrate">Calibrate: click 2 points</button>
-        <button id="btnResetCalib" class="ghost">Reset calibration</button>
-      </div>
-      <div class="readout" id="calibReadout">Calibration: not set</div>
+    <!-- HOW IT WORKS + VARIABLE DETAIL -->
+    <aside id="how" class="panel">
+      <h2>How it works (math)</h2>
 
-      <h2>3) Mark Shuttle Positions</h2>
-      <div class="row">
-        <button id="btnMarkA">Mark A (click on shuttle)</button>
-        <button id="btnMarkB">Mark B (click on shuttle)</button>
-        <button id="btnResetAB" class="ghost">Reset A/B</button>
-      </div>
-      <div class="readout" id="abReadout">A/B: not set</div>
+      <div class="card-light">
+        <!-- Render the formula plainly (image earlier) -->
+        <div class="formula">
+          <code>v₀ = (e^(kₓ · x(t)) − 1) / (kₓ · t · cos θ)</code>
+        </div>
 
-      <h2>4) Camera Skew (Optional)</h2>
-      <label>
-        Skew angle (degrees)
-        <input id="skewDeg" type="number" step="0.1" placeholder="0" />
-      </label>
-      <p class="hint">Angle between camera view and perpendicular to shuttle motion; correction uses 1/cos(angle).</p>
+        <details open>
+          <summary>Short summary</summary>
+          <p>
+            The formula comes from an exponential model of motion with a parameter <strong>kₓ</strong>. For a measured
+            distance <em>x(t)</em> in a measured time <em>t</em> and launch angle θ, we solve for the initial speed v₀ as shown above.
+          </p>
+        </details>
 
-      <h2>Results</h2>
-      <div class="results" id="results">
-        <div><strong>Distance (m):</strong> —</div>
-        <div><strong>Δt (s):</strong> —</div>
-        <div><strong>Speed (m/s):</strong> —</div>
-        <div><strong>Speed (km/h):</strong> —</div>
-        <div><strong>Speed (mph):</strong> —</div>
-        <div class="small">Note: Corrected for skew if provided.</div>
+        <label class="var-explain-label">Explain a variable:
+          <select id="varSelect">
+            <option value="">(choose a variable)</option>
+            <option value="x">x(t) — distance</option>
+            <option value="t">t — time</option>
+            <option value="theta">θ — angle</option>
+            <option value="kx">kₓ — model constant</option>
+          </select>
+        </label>
+        <div id="varExplain" class="muted small">Select a variable to see a short explanation.</div>
       </div>
+
+      <details id="mathDetails">
+        <summary>Step-by-step math</summary>
+        <ol>
+          <li>Plug in your measured <code>x(t)</code>, <code>t</code>, and angle θ (converted to radians in the code).</li>
+          <li>Compute <code>numerator = e^(kₓ * x) - 1</code>.</li>
+          <li>Compute <code>denominator = kₓ * t * cos(θ)</code>. If denominator ≈ 0 the formula is invalid — check t and θ.</li>
+          <li>Then <code>v₀ = numerator / denominator</code>. Units: m/s (converted below).</li>
+          <li>We include simple UI validation and small notes about typical numeric ranges.</li>
+        </ol>
+      </details>
+    </aside>
+
+    <!-- METHODOLOGY -->
+    <section id="method" class="panel">
+      <h2>Methodology, Aim & Notes</h2>
 
       <details>
-        <summary>How it works (math)</summary>
+        <summary>Project aim</summary>
+        <p>
+          Describe your aim here (example): create an accessible method to estimate shuttlecock initial speed without speed guns,
+          using a mathematical model and simple measurements. The site provides a calculator for exploratory use.
+        </p>
+      </details>
+
+      <details>
+        <summary>Methodology (detailed)</summary>
+        <p>
+          Paste your detailed methodology / validation steps here. Suggested sub-items:
+        </p>
         <ul>
-          <li>Click two <em>calibration</em> points with known real-world separation <code>L</code> meters → compute meters-per-pixel.</li>
-          <li>Mark shuttle at time <code>t₁</code> and <code>t₂</code>; measure pixel distance <code>dpx</code> between clicks.</li>
-          <li>Distance in meters: <code>d = dpx × (L / calib_px)</code>.</li>
-          <li>Time difference: <code>Δt = |t₂ − t₁|</code> (from the video timestamp).</li>
-          <li>Raw speed: <code>v = d / Δt</code>. Skew-corrected: <code>v' = v / cos(θ)</code>.</li>
+          <li>Data collection (how you measured distances and times).</li>
+          <li>Choice and justification of <code>kₓ</code> (drag/decay constant) and how you validated it.</li>
+          <li>Limitations — camera parallax, angle measurement error, shuttle spin, measurement noise.</li>
+          <li>Validation: how you compared results (e.g., known speed ranges, repeated measurements).</li>
         </ul>
       </details>
+
+      <details>
+        <summary>Notes for reviewers / admissions officers</summary>
+        <p class="muted small">
+          Tip: if you attach this project to an application, include a screenshot of this page and (optionally) a short validation table.
+          The code and calculations are public in the repository for transparency.
+        </p>
+      </details>
     </section>
+
   </main>
 
-  <footer class="wrap">
-    <p class="small">
-      Court references (FYI): singles width 5.18 m, doubles width 6.10 m, court length 13.40 m.
-      Consider using full widths/lengths for more robust calibration.
-    </p>
+  <footer class="wrap footer">
+    <div class="small muted">Built for IB Math IA — client-side only. Edit kₓ default in the page or in <code>app.js</code>.</div>
+    <div class="small muted">© Your Name — 2025</div>
   </footer>
 
   <script src="app.js"></script>
