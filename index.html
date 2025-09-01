@@ -10,7 +10,7 @@
   <header class="wrap header">
     <div>
       <h1>Smash Speed Calculator</h1>
-      <p class="subtitle">Compute initial speed v₀ from your measured distance, time, and angle using your IA formula.</p>
+      <p class="subtitle">Calculate your badminton smash speed (v₀) from your measured distance, time, and angle. -By Peicheng Yue </p>
     </div>
 
     <nav class="nav">
@@ -26,32 +26,32 @@
     <section id="calculator" class="panel">
       <h2>Calculator</h2>
 
-      <p class="hint">All calculations happen locally in your browser. Enter values (defaults provided). Use the <strong>kₓ</strong> field to set the drag/decay constant — or edit the default in app.js (see comments).</p>
+      <p class="hint">All calculations happen locally in your browser. Enter values (defaults provided).</p>
 
       <div class="form-grid">
         <label>
           Distance x(t) &nbsp;<span class="muted">(meters)</span>
-          <input id="inputDistance" type="number" step="0.01" value="5.00" />
+          <input id="inputDistance" type="number" step="0.01" value="9.50" />
         </label>
 
         <label>
           Time t &nbsp;<span class="muted">(seconds)</span>
-          <input id="inputTime" type="number" step="0.001" value="0.2" />
+          <input id="inputTime" type="number" step="0.001" value="0.5" />
         </label>
 
         <label>
           Angle θ &nbsp;<span class="muted">(degrees)</span>
-          <input id="inputAngle" type="number" step="0.1" value="5" />
+          <input id="inputAngle" type="number" step="0.1" value="8" />
         </label>
 
         <label>
-          Drag constant kₓ &nbsp;<span class="muted">(1 / m — set from your experiments)</span>
-          <input id="inputKx" type="number" step="0.0001" value="0.05" />
+          Drag constant kₓ &nbsp;<span class="muted">(1 / m — We suggest using the default value, please read the methodology section for more information regarding this variable)</span>
+          <input id="inputKx" type="number" step="0.0001" value="0.2" />
         </label>
       </div>
 
       <div class="row">
-        <button id="btnCalc">Calculate v₀</button>
+        <button id="btnCalc">Calculate Smash Speed (v₀) !</button>
         <button id="btnClear" class="ghost">Reset</button>
       </div>
 
