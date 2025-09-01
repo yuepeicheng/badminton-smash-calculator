@@ -1,244 +1,191 @@
-// --- Elements ---
-const fileInput = document.getElementById('fileInput');
-const video = document.getElementById('video');
-const overlay = document.getElementById('overlay');
-const statusEl = document.getElementById('status');
+/* app.js
+   Client-side calculator for:
+   v0 = (e^(k_x * x(t)) - 1) / (k_x * t * cos(theta))
 
-const knownMetersEl = document.getElementById('knownMeters');
-const btnCalibrate = document.getElementById('btnCalibrate');
-const btnResetCalib = document.getElementById('btnResetCalib');
-const calibReadout = document.getElementById('calibReadout');
+   - Everything runs locally in the user's browser (no server).
+   - Edit the UI default values in index.html, or change defaultKx below.
+   - The UI also includes a visible kx input; if you prefer to "hardcode" kx,
+     set defaultKx and optionally hide the input in index.html/CSS.
+*/
 
-const btnMarkA = document.getElementById('btnMarkA');
-const btnMarkB = document.getElementById('btnMarkB');
-const btnResetAB = document.getElementById('btnResetAB');
-const abReadout = document.getElementById('abReadout');
+/* -------------------------
+   Config / default constants
+   -------------------------
+   If you want to hardcode kx in the source file instead of the input,
+   update `defaultKx` and (optionally) remove or hide the kx input from index.html.
+*/
+const defaultKx = 0.05; // <-- placeholder: replace this with your measured k_x if desired
 
-const skewDegEl = document.getElementById('skewDeg');
-const resultsEl = document.getElementById('results');
+/* -------------------------
+   DOM element references
+   ------------------------- */
+const el = {
+  distance: document.getElementById('inputDistance'),
+  time: document.getElementById('inputTime'),
+  angle: document.getElementById('inputAngle'),
+  kx: document.getElementById('inputKx'),
 
-const ctx = overlay.getContext('2d');
+  btnCalc: document.getElementById('btnCalc'),
+  btnClear: document.getElementById('btnClear'),
 
-// --- State ---
-let mode = 'idle'; // 'calib1' | 'calib2' | 'markA' | 'markB' | 'idle'
-let calib = { p1: null, p2: null, metersPerPixel: null, pxDist: null };
-let A = null; // {nx, ny, t}
-let B = null;
+  outMps: document.getElementById('outMps'),
+  outKmh: document.getElementById('outKmh'),
+  outMph: document.getElementById('outMph'),
+  outNotes: document.getElementById('outNotes'),
 
-// --- Helpers ---
-function setStatus(msg) {
-  statusEl.textContent = msg || '';
+  resultCard: document.getElementById('resultCard'),
+  errorBox: document.getElementById('error'),
+  varSelect: document.getElementById('varSelect'),
+  varExplain: document.getElementById('varExplain')
+};
+
+/* Initialize visible kx input with default fallback */
+if (!el.kx.value) {
+  el.kx.value = defaultKx;
 }
-function fmt(n, digits = 3) {
+
+/* Utility formatting helpers */
+function fmt(n, dp = 3) {
   if (!isFinite(n)) return '—';
-  return Number(n).toFixed(digits);
+  return Number(n).toFixed(dp);
 }
-function toRad(deg) {
-  return (Number(deg) || 0) * Math.PI / 180;
-}
-function clearAB() {
-  A = null; B = null;
-  abReadout.textContent = 'A/B: not set';
-  draw();
-  compute();
-}
-function clearCalib() {
-  calib = { p1: null, p2: null, metersPerPixel: null, pxDist: null };
-  calibReadout.textContent = 'Calibration: not set';
-  draw();
-  compute();
-}
-function normFromEvent(ev) {
-  const rect = overlay.getBoundingClientRect();
-  const nx = (ev.clientX - rect.left) / rect.width;
-  const ny = (ev.clientY - rect.top) / rect.height;
-  return { nx: Math.min(Math.max(nx, 0), 1), ny: Math.min(Math.max(ny, 0), 1) };
-}
-function pxDistBetween(p1, p2) {
-  // Convert normalized coords to intrinsic pixels (video videoWidth/Height)
-  const dx = (p2.nx - p1.nx) * video.videoWidth;
-  const dy = (p2.ny - p1.ny) * video.videoHeight;
-  return Math.hypot(dx, dy);
-}
-function draw() {
-  // Match canvas to element size
-  overlay.width = overlay.clientWidth;
-  overlay.height = overlay.clientHeight;
-  ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-  function drawPoint(p, color) {
-    if (!p) return;
-    const x = p.nx * overlay.width;
-    const y = p.ny * overlay.height;
-    ctx.fillStyle = color;
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  }
-  function drawLine(p1, p2, color) {
-    if (!p1 || !p2) return;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(p1.nx * overlay.width, p1.ny * overlay.height);
-    ctx.lineTo(p2.nx * overlay.width, p2.ny * overlay.height);
-    ctx.stroke();
+/* Show/hide helpers */
+function showError(msg) {
+  el.errorBox.textContent = msg;
+  el.errorBox.classList.remove('hidden');
+}
+function hideError() {
+  el.errorBox.textContent = '';
+  el.errorBox.classList.add('hidden');
+}
+function showResults() {
+  el.resultCard.classList.remove('hidden');
+}
+function hideResults() {
+  el.resultCard.classList.add('hidden');
+}
+
+/* Core calculation:
+   v0 = (exp(kx * x) - 1) / (kx * t * cos(theta))
+   All inputs should be numbers; theta must be converted to radians.
+*/
+function calculateV0(x, t, thetaDegrees, kx) {
+  // Convert angle to radians
+  const thetaRad = (Number(thetaDegrees) || 0) * Math.PI / 180;
+
+  // Numerator: exp(kx * x) - 1
+  const numerator = Math.exp(kx * x) - 1;
+
+  // Denominator: kx * t * cos(theta)
+  const cosTheta = Math.cos(thetaRad);
+  const denominator = kx * t * cosTheta;
+
+  // Guard against invalid denom (near zero)
+  if (Math.abs(denominator) < 1e-12) {
+    return { error: 'Denominator too small — check t and θ (cos θ should not be 0).' };
   }
 
-  // Calibration in gold
-  drawLine(calib.p1, calib.p2, '#ffcc4d');
-  drawPoint(calib.p1, '#ffcc4d');
-  drawPoint(calib.p2, '#ffcc4d');
-
-  // Shuttle A/B (A=blue, B=red)
-  drawLine(A, B, '#6db5ff');
-  drawPoint(A, '#6db5ff');
-  drawPoint(B, '#ff6b6b');
+  const v0 = numerator / denominator;
+  return { v0, numerator, denominator, cosTheta, thetaRad };
 }
 
-function compute() {
-  let info = {
-    distance_m: null,
-    dt_s: null,
-    speed_mps: null,
-    speed_kmh: null,
-    speed_mph: null
-  };
+/* Button handlers */
+el.btnCalc.addEventListener('click', () => {
+  hideError();
 
-  // Calibration
-  if (calib.p1 && calib.p2) {
-    const knownMeters = Number(knownMetersEl.value);
-    const px = pxDistBetween(calib.p1, calib.p2);
-    if (knownMeters > 0 && px > 0) {
-      calib.pxDist = px;
-      calib.metersPerPixel = knownMeters / px;
-      calibReadout.innerHTML = `Calibration: ${fmt(knownMeters, 3)} m over ${fmt(px, 1)} px → <strong>${fmt(calib.metersPerPixel, 6)} m/px</strong>`;
-    } else {
-      calibReadout.textContent = 'Calibration: waiting for valid known distance and two clicks.';
-      calib.metersPerPixel = null;
-    }
-  }
+  // Parse inputs
+  const x = Number(el.distance.value);
+  const t = Number(el.time.value);
+  const theta = Number(el.angle.value);
+  const kx = Number(el.kx.value);
 
-  // A/B
-  if (A && B) {
-    const pxAB = pxDistBetween(A, B);
-    const dt = Math.abs((A.t ?? video.currentTime) - (B.t ?? video.currentTime));
-    abReadout.textContent = `A: t=${fmt(A?.t, 3)} s • B: t=${fmt(B?.t, 3)} s • Δpx=${fmt(pxAB, 1)} • Δt=${fmt(dt, 4)} s`;
-
-    if (calib.metersPerPixel && dt > 0) {
-      let d = pxAB * calib.metersPerPixel; // meters
-      const theta = toRad(skewDegEl.value);
-      const corrected = Math.cos(theta) || 1; // avoid NaN
-      const v = (d / dt) / corrected;
-
-      info.distance_m = d;
-      info.dt_s = dt;
-      info.speed_mps = v;
-      info.speed_kmh = v * 3.6;
-      info.speed_mph = v * 2.236936;
-
-      resultsEl.innerHTML = `
-        <div><strong>Distance (m):</strong> ${fmt(d, 3)}</div>
-        <div><strong>Δt (s):</strong> ${fmt(dt, 4)}</div>
-        <div><strong>Speed (m/s):</strong> ${fmt(v, 3)}</div>
-        <div><strong>Speed (km/h):</strong> ${fmt(info.speed_kmh, 2)}</div>
-        <div><strong>Speed (mph):</strong> ${fmt(info.speed_mph, 2)}</div>
-        <div class="small">Skew correction factor: 1/cos(${fmt(Number(skewDegEl.value) || 0,1)}°)</div>
-      `;
-    }
-  }
-
-  return info;
-}
-
-// --- Event wiring ---
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  clearCalib();
-  clearAB();
-  const url = URL.createObjectURL(file);
-  video.src = url;
-  setStatus('Video loaded. Pause on a frame, then click points.');
-});
-
-video.addEventListener('loadedmetadata', () => {
-  // size overlay to video element
-  const resize = () => draw();
-  new ResizeObserver(resize).observe(overlay);
-  draw();
-});
-
-btnCalibrate.addEventListener('click', () => {
-  const L = Number(knownMetersEl.value);
-  if (!(L > 0)) {
-    setStatus('Enter a valid known distance in meters before calibrating.');
-    knownMetersEl.focus();
+  // Basic validation — you can add stronger checks if needed
+  if (!isFinite(x) || !isFinite(t) || !isFinite(theta) || !isFinite(kx)) {
+    showError('Please enter valid numeric values for all fields.');
+    hideResults();
     return;
   }
-  calib.p1 = null; calib.p2 = null; calib.metersPerPixel = null; calib.pxDist = null;
-  mode = 'calib1';
-  setStatus('Calibration: click point 1 on the video.');
-  draw();
-});
-
-btnResetCalib.addEventListener('click', () => {
-  clearCalib();
-  setStatus('Calibration reset.');
-});
-
-btnMarkA.addEventListener('click', () => {
-  mode = 'markA';
-  setStatus('Mark A: pause video at time t₁ and click the shuttle.');
-});
-
-btnMarkB.addEventListener('click', () => {
-  mode = 'markB';
-  setStatus('Mark B: pause video at time t₂ and click the shuttle.');
-});
-
-btnResetAB.addEventListener('click', () => {
-  clearAB();
-  setStatus('Cleared A/B.');
-});
-
-overlay.addEventListener('click', ev => {
-  const p = normFromEvent(ev);
-
-  if (mode === 'calib1') {
-    calib.p1 = { nx: p.nx, ny: p.ny };
-    mode = 'calib2';
-    setStatus('Calibration: click point 2.');
-    draw();
-  } else if (mode === 'calib2') {
-    calib.p2 = { nx: p.nx, ny: p.ny };
-    mode = 'idle';
-    setStatus('Calibration set.');
-    draw();
-    compute();
-  } else if (mode === 'markA') {
-    A = { nx: p.nx, ny: p.ny, t: video.currentTime };
-    mode = 'idle';
-    setStatus('Marked A.');
-    draw();
-    compute();
-  } else if (mode === 'markB') {
-    B = { nx: p.nx, ny: p.ny, t: video.currentTime };
-    mode = 'idle';
-    setStatus('Marked B.');
-    draw();
-    compute();
-  } else {
-    // idle: ignore clicks (prevents accidental marks)
+  if (t <= 0) {
+    showError('Time must be > 0 seconds.');
+    hideResults();
+    return;
   }
+  if (kx === 0) {
+    showError('kₓ must be non-zero for this formula.');
+    hideResults();
+    return;
+  }
+
+  // Run calculation
+  const res = calculateV0(x, t, theta, kx);
+  if (res.error) {
+    showError(res.error);
+    hideResults();
+    return;
+  }
+
+  const v0 = res.v0;
+  // Set outputs & conversions
+  const v_kmh = v0 * 3.6;
+  const v_mph = v0 * 2.236936;
+
+  el.outMps.textContent = `${fmt(v0, 3)} m/s`;
+  el.outKmh.textContent = `${fmt(v_kmh, 2)} km/h`;
+  el.outMph.textContent = `${fmt(v_mph, 2)} mph`;
+
+  // Small note about numeric stability and assumptions
+  el.outNotes.innerHTML = `
+    <strong>Notes:</strong> numerator = exp(kₓ·x) − 1 = ${fmt(res.numerator,4)}; cos(θ) = ${fmt(res.cosTheta,4)}.
+    Results sensitive to kₓ and θ measurement errors. See methodology for validation tips.
+  `;
+
+  showResults();
 });
 
-[knownMetersEl, skewDegEl].forEach(el => {
-  el.addEventListener('input', compute);
+/* Reset / clear */
+el.btnClear.addEventListener('click', () => {
+  // Reset to defaults found in index.html; if you want different defaults, edit index.html values.
+  el.distance.value = 5.00;
+  el.time.value = 0.2;
+  el.angle.value = 5;
+  el.kx.value = defaultKx;
+  hideError();
+  hideResults();
 });
 
-// Keep overlay synced on window resize
-window.addEventListener('resize', draw);
+/* Variable explanation dropdown (select) — small UI behavior */
+el.varSelect.addEventListener('change', (ev) => {
+  const v = ev.target.value;
+  if (!v) {
+    el.varExplain.textContent = 'Select a variable to see a short explanation.';
+    return;
+  }
+  let text = '';
+  switch (v) {
+    case 'x':
+      text = 'x(t): measured distance travelled by the shuttle (meters). Use the same measurement units as kₓ (meters).';
+      break;
+    case 't':
+      text = 't: measured time interval (seconds) during which the shuttle covered distance x(t). Should be > 0.';
+      break;
+    case 'theta':
+      text = 'θ: launch angle (degrees) relative to a horizontal reference. Small angles (near 0°) are common for smashes; cos θ is used in the denominator.';
+      break;
+    case 'kx':
+      text = 'kₓ: model constant (units 1/m). This parameter models exponential decay/growth used in the derivation. Calibrate experimentally or enter a literature / fitted value.';
+      break;
+    default:
+      text = '';
+  }
+  el.varExplain.textContent = text;
+});
+
+/* Small UX: hide results initially */
+hideResults();
+hideError();
+
+/* Optional: expose calculate function to console for debugging / quick checks */
+window._debug_calc = function(x,t,theta,kx){ return calculateV0(x,t,theta,kx); };
+
+/* End of app.js */
