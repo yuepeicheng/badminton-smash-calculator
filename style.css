@@ -515,6 +515,12 @@ body {
   border: 1px solid var(--border);
 }
 
+.angle-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
 #angleCanvas {
   width: 100%;
   height: auto;
@@ -522,8 +528,56 @@ body {
   background: var(--bg-tertiary);
   border-radius: 0.625rem;
   cursor: crosshair;
-  margin-bottom: 1rem;
   display: block;
+  position: relative;
+  z-index: 2;
+}
+
+.angle-video {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  border-radius: 0.625rem;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.angle-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.angle-control-btn {
+  flex: 1;
+  min-width: 120px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  border: 2px solid var(--border);
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.angle-control-btn:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+.angle-control-btn svg {
+  flex-shrink: 0;
 }
 
 .angle-display {

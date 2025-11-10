@@ -346,6 +346,10 @@ function initAngleTool() {
   const canvas = document.getElementById('angleCanvas');
   const angleValue = document.getElementById('angleValue');
   const btnUseAngle = document.getElementById('btnUseAngle');
+  const angleVideoPlayer = document.getElementById('angleVideoPlayer');
+  const btnFreezeVideo = document.getElementById('btnFreezeVideo');
+  const btnUnfreezeVideo = document.getElementById('btnUnfreezeVideo');
+  const btnFlipAngle = document.getElementById('btnFlipAngle');
 
   if (!canvas || !angleValue || !btnUseAngle) {
     console.log('Angle tool elements not found - skipping angle tool functionality');
@@ -357,38 +361,137 @@ function initAngleTool() {
   // State variables
   let baseLineStart = { x: 150, y: 200 };
   let baseLineEnd = { x: 450, y: 200 };
-  let angleLineEnd = { x: 450, y: 100 };
+  let angleLineEnd = { x: 350, y: 300 };
   let dragging = null;
   let currentAngle = 0;
+  let isFlipped = false;
+  let frozenFrame = null;
 
-  // Calculate angle between two lines
+  // Sync video with main video player
+  function syncVideoWithMain() {
+    const mainVideoPlayer = document.getElementById('videoPlayer');
+    if (mainVideoPlayer && mainVideoPlayer.src && angleVideoPlayer) {
+      angleVideoPlayer.src = mainVideoPlayer.src;
+      angleVideoPlayer.currentTime = mainVideoPlayer.currentTime;
+      angleVideoPlayer.classList.remove('hidden');
+
+      // Show freeze button when video is loaded
+      if (btnFreezeVideo) btnFreezeVideo.classList.remove('hidden');
+
+      console.log('Video synced to angle tool');
+    }
+  }
+
+  // Listen for video uploads on main player
+  const mainVideoUpload = document.getElementById('videoUpload');
+  if (mainVideoUpload) {
+    mainVideoUpload.addEventListener('change', () => {
+      setTimeout(syncVideoWithMain, 500);
+    });
+  }
+
+  // Freeze/Unfreeze functionality
+  if (btnFreezeVideo) {
+    btnFreezeVideo.addEventListener('click', () => {
+      if (angleVideoPlayer) {
+        angleVideoPlayer.pause();
+
+        // Capture current frame to canvas background
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Calculate aspect ratio fit
+        const videoAspect = angleVideoPlayer.videoWidth / angleVideoPlayer.videoHeight;
+        const canvasAspect = canvas.width / canvas.height;
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (videoAspect > canvasAspect) {
+          drawWidth = canvas.width;
+          drawHeight = canvas.width / videoAspect;
+          offsetX = 0;
+          offsetY = (canvas.height - drawHeight) / 2;
+        } else {
+          drawHeight = canvas.height;
+          drawWidth = canvas.height * videoAspect;
+          offsetX = (canvas.width - drawWidth) / 2;
+          offsetY = 0;
+        }
+
+        tempCtx.drawImage(angleVideoPlayer, offsetX, offsetY, drawWidth, drawHeight);
+        frozenFrame = tempCanvas;
+
+        btnFreezeVideo.classList.add('hidden');
+        if (btnUnfreezeVideo) btnUnfreezeVideo.classList.remove('hidden');
+
+        draw();
+        console.log('Frame frozen');
+      }
+    });
+  }
+
+  if (btnUnfreezeVideo) {
+    btnUnfreezeVideo.addEventListener('click', () => {
+      frozenFrame = null;
+      if (angleVideoPlayer) angleVideoPlayer.play();
+
+      btnUnfreezeVideo.classList.add('hidden');
+      if (btnFreezeVideo) btnFreezeVideo.classList.remove('hidden');
+
+      draw();
+      console.log('Frame unfrozen');
+    });
+  }
+
+  // Flip functionality
+  if (btnFlipAngle) {
+    btnFlipAngle.addEventListener('click', () => {
+      isFlipped = !isFlipped;
+
+      // Swap the base line endpoints to flip direction
+      const temp = baseLineStart;
+      baseLineStart = baseLineEnd;
+      baseLineEnd = temp;
+
+      // Recalculate angle line position to maintain angle
+      const currentAngleRad = currentAngle * Math.PI / 180;
+      const baseLength = Math.abs(baseLineEnd.x - baseLineStart.x);
+      const angleLength = 150; // Fixed length for angle line
+
+      if (isFlipped) {
+        angleLineEnd.x = baseLineEnd.x - angleLength * Math.cos(currentAngleRad);
+        angleLineEnd.y = baseLineEnd.y + angleLength * Math.sin(currentAngleRad);
+      } else {
+        angleLineEnd.x = baseLineEnd.x + angleLength * Math.cos(currentAngleRad);
+        angleLineEnd.y = baseLineEnd.y + angleLength * Math.sin(currentAngleRad);
+      }
+
+      draw();
+      console.log('Angle measurement flipped');
+    });
+  }
+
+  // Calculate angle (always 0-90 degrees, measuring downward from horizontal)
   function calculateAngle() {
-    // Vector from base line start to end
+    // Horizontal base line vector (always horizontal)
     const baseVector = {
       x: baseLineEnd.x - baseLineStart.x,
-      y: baseLineEnd.y - baseLineStart.y
+      y: 0 // Always horizontal
     };
 
-    // Vector from base line end to angle line end
+    // Angle line vector
     const angleVector = {
       x: angleLineEnd.x - baseLineEnd.x,
       y: angleLineEnd.y - baseLineEnd.y
     };
 
-    // Calculate angle using atan2
-    const baseAngle = Math.atan2(baseVector.y, baseVector.x);
-    const lineAngle = Math.atan2(angleVector.y, angleVector.x);
+    // Calculate angle from horizontal
+    // Only measure downward angles (0-90 degrees)
+    const angle = Math.atan2(Math.abs(angleVector.y), Math.abs(angleVector.x)) * (180 / Math.PI);
 
-    // Get the difference and convert to degrees
-    let angle = (lineAngle - baseAngle) * (180 / Math.PI);
-
-    // Normalize to 0-360 range
-    if (angle < 0) angle += 360;
-
-    // Return the acute angle (0-180)
-    if (angle > 180) angle = 360 - angle;
-
-    return angle;
+    // Clamp to 0-90 degrees
+    return Math.max(0, Math.min(90, angle));
   }
 
   // Draw the angle measurement tool
@@ -396,52 +499,76 @@ function initAngleTool() {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw frozen frame if available
+    if (frozenFrame) {
+      ctx.globalAlpha = 0.5;
+      ctx.drawImage(frozenFrame, 0, 0);
+      ctx.globalAlpha = 1.0;
+    }
+
     // Style settings
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.lineCap = 'round';
 
-    // Draw base line (horizontal reference)
+    // Draw base line (horizontal reference) - force it to be horizontal
     ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(baseLineStart.x, baseLineStart.y);
-    ctx.lineTo(baseLineEnd.x, baseLineEnd.y);
+    ctx.lineTo(baseLineEnd.x, baseLineStart.y); // Force same Y coordinate
     ctx.stroke();
 
-    // Draw angle line (adjustable)
+    // Draw angle line (adjustable, constrained to go downward)
     ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(baseLineEnd.x, baseLineEnd.y);
+    ctx.moveTo(baseLineEnd.x, baseLineStart.y);
     ctx.lineTo(angleLineEnd.x, angleLineEnd.y);
     ctx.stroke();
 
     // Draw angle arc
-    const radius = 50;
-    const baseAngle = Math.atan2(baseLineEnd.y - baseLineStart.y, baseLineEnd.x - baseLineStart.x);
-    const lineAngle = Math.atan2(angleLineEnd.y - baseLineEnd.y, angleLineEnd.x - baseLineEnd.x);
+    const radius = 60;
+    const startAngle = 0; // Horizontal line starts at 0
+    const endAngleRad = Math.atan2(
+      angleLineEnd.y - baseLineStart.y,
+      angleLineEnd.x - baseLineEnd.x
+    );
 
     ctx.strokeStyle = '#10b981';
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(baseLineEnd.x, baseLineEnd.y, radius, baseAngle, lineAngle, lineAngle < baseAngle);
+    ctx.arc(baseLineEnd.x, baseLineStart.y, radius, startAngle, endAngleRad);
     ctx.stroke();
-    ctx.lineTo(baseLineEnd.x, baseLineEnd.y);
+
+    // Fill the arc
+    ctx.beginPath();
+    ctx.moveTo(baseLineEnd.x, baseLineStart.y);
+    ctx.arc(baseLineEnd.x, baseLineStart.y, radius, startAngle, endAngleRad);
+    ctx.lineTo(baseLineEnd.x, baseLineStart.y);
     ctx.closePath();
     ctx.fill();
 
     // Draw control points
-    const drawPoint = (point, color) => {
+    const drawPoint = (point, color, label) => {
       ctx.fillStyle = color;
       ctx.strokeStyle = 'white';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, 10, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
+
+      // Draw label
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, point.x, point.y - 15);
     };
 
-    drawPoint(baseLineStart, '#3b82f6');
-    drawPoint(baseLineEnd, '#10b981');
-    drawPoint(angleLineEnd, '#60a5fa');
+    drawPoint(baseLineStart, '#3b82f6', 'A');
+    drawPoint({ x: baseLineEnd.x, y: baseLineStart.y }, '#10b981', 'B');
+    drawPoint(angleLineEnd, '#60a5fa', 'C');
 
     // Update angle display
     currentAngle = calculateAngle();
@@ -460,7 +587,7 @@ function initAngleTool() {
   }
 
   // Check if mouse is near a point
-  function isNearPoint(mouse, point, threshold = 15) {
+  function isNearPoint(mouse, point, threshold = 20) {
     const dx = mouse.x - point.x;
     const dy = mouse.y - point.y;
     return Math.sqrt(dx * dx + dy * dy) < threshold;
@@ -472,7 +599,7 @@ function initAngleTool() {
 
     if (isNearPoint(mouse, baseLineStart)) {
       dragging = 'baseStart';
-    } else if (isNearPoint(mouse, baseLineEnd)) {
+    } else if (isNearPoint(mouse, { x: baseLineEnd.x, y: baseLineStart.y })) {
       dragging = 'baseEnd';
     } else if (isNearPoint(mouse, angleLineEnd)) {
       dragging = 'angleEnd';
@@ -483,7 +610,9 @@ function initAngleTool() {
     const mouse = getMousePos(e);
 
     // Update cursor
-    if (isNearPoint(mouse, baseLineStart) || isNearPoint(mouse, baseLineEnd) || isNearPoint(mouse, angleLineEnd)) {
+    if (isNearPoint(mouse, baseLineStart) ||
+        isNearPoint(mouse, { x: baseLineEnd.x, y: baseLineStart.y }) ||
+        isNearPoint(mouse, angleLineEnd)) {
       canvas.style.cursor = 'pointer';
     } else {
       canvas.style.cursor = 'crosshair';
@@ -491,12 +620,29 @@ function initAngleTool() {
 
     if (dragging) {
       if (dragging === 'baseStart') {
+        // Move entire horizontal line
+        const deltaY = mouse.y - baseLineStart.y;
         baseLineStart = mouse;
+        baseLineEnd.y = baseLineStart.y; // Keep horizontal
+        angleLineEnd.y += deltaY;
       } else if (dragging === 'baseEnd') {
-        baseLineEnd = mouse;
-        // Keep angle line attached to base line end
+        // Move the end point, but keep it horizontal
+        baseLineEnd.x = mouse.x;
+        baseLineEnd.y = baseLineStart.y; // Force horizontal
       } else if (dragging === 'angleEnd') {
-        angleLineEnd = mouse;
+        // Constrain angle line endpoint
+        // Only allow movement that keeps angle between 0-90 degrees and below the horizontal
+        angleLineEnd.x = mouse.x;
+        angleLineEnd.y = Math.max(baseLineStart.y, mouse.y); // Force it to be below or at horizontal line
+
+        // Constrain to 90 degree max
+        const dx = angleLineEnd.x - baseLineEnd.x;
+        const dy = angleLineEnd.y - baseLineStart.y;
+
+        // If angle exceeds 90 degrees, clamp it
+        if (Math.abs(dy) > Math.abs(dx)) {
+          angleLineEnd.y = baseLineStart.y + Math.abs(dx) * Math.sign(dy);
+        }
       }
       draw();
     }
@@ -514,7 +660,7 @@ function initAngleTool() {
   // Use angle button
   btnUseAngle.addEventListener('click', () => {
     const angleInput = document.getElementById('inputAngle');
-    if (angleInput && currentAngle > 0) {
+    if (angleInput) {
       angleInput.value = currentAngle.toFixed(1);
 
       // Highlight the angle input briefly
