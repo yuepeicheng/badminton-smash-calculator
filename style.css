@@ -93,12 +93,16 @@ body {
   transition: all 0.2s ease;
   flex: 0 0 auto;
   min-width: 180px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .tutorial-step:hover {
   background: var(--surface-hover);
   border-color: var(--accent);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .tutorial-arrow {

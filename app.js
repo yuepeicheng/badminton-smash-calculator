@@ -563,24 +563,27 @@ function initAngleTool() {
     ctx.lineTo(angleLineEnd.x, angleLineEnd.y);
     ctx.stroke();
 
-    // Draw angle arc - determine direction based on which way the base line points
+    // Draw angle arc - always show the acute angle between horizontal and angle line
     const radius = 60;
     const baseDirection = baseLineEnd.x - baseLineStart.x; // Positive = right, negative = left
 
-    // Calculate angle for the arc
+    // Calculate vectors
     const dx = angleLineEnd.x - baseLineEnd.x;
     const dy = angleLineEnd.y - baseLineStart.y;
 
     let startAngleRad, endAngleRad;
 
     if (baseDirection > 0) {
-      // Base line points right - arc goes clockwise from horizontal down
+      // Base line points RIGHT
+      // Arc should go from horizontal (0) downward to the angle line
       startAngleRad = 0;
       endAngleRad = Math.atan2(dy, dx);
     } else {
-      // Base line points left - arc goes counter-clockwise from horizontal down
+      // Base line points LEFT
+      // Arc should go from horizontal (π) downward to the angle line
+      // The angle line is on the left side, so we measure from π going clockwise
       startAngleRad = Math.PI;
-      endAngleRad = Math.PI - Math.atan2(dy, -dx);
+      endAngleRad = Math.PI + Math.atan2(dy, -dx);
     }
 
     ctx.strokeStyle = '#10b981';
