@@ -32,6 +32,27 @@
     </div>
   </header>
 
+  <!-- Tutorial Section -->
+  <section class="tutorial-section">
+    <div class="tutorial-content">
+      <h3 class="tutorial-title">Quick Tutorial</h3>
+      <div class="tutorial-steps">
+        <div class="tutorial-step">
+          <span class="step-number">1</span>
+          <span class="step-text">Find <strong>time</strong> using video analysis time tool</span>
+        </div>
+        <div class="tutorial-step">
+          <span class="step-number">2</span>
+          <span class="step-text">Find <strong>distance</strong> estimate using our court dimension estimates</span>
+        </div>
+        <div class="tutorial-step">
+          <span class="step-number">3</span>
+          <span class="step-text">Find <strong>angle</strong> using video analysis angle tool</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <main class="main-container">
 
     <!-- Left Side: Video Analysis -->
@@ -55,6 +76,12 @@
       </div>
 
       <div id="videoContainer" class="video-player-container hidden">
+        <button id="closeVideoBtn" class="close-video-btn" title="Change video">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
         <video id="videoPlayer" controls></video>
 
         <div class="timeline-container">
@@ -114,6 +141,24 @@
           </div>
         </div>
       </div>
+
+      <!-- Angle Measurement Tool -->
+      <div class="angle-tool-section">
+        <h3 class="subsection-title">Angle Measurement Tool</h3>
+        <div class="angle-tool-container">
+          <canvas id="angleCanvas" width="600" height="400"></canvas>
+          <div class="angle-display">
+            <span class="angle-label">Measured Angle:</span>
+            <span class="angle-value" id="angleValue">0°</span>
+          </div>
+          <button id="btnUseAngle" class="use-angle-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Use This Angle
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- Right Side: Calculator -->
@@ -170,22 +215,6 @@
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
               <span>Launch angle relative to horizontal</span>
-            </div>
-          </div>
-
-          <div class="input-wrapper">
-            <label class="input-label">
-              <span class="label-text">Drag Constant <em>kₓ</em></span>
-              <span class="label-unit">1/m</span>
-            </label>
-            <input id="inputKx" type="number" step="0.0001" value="0.2" class="calc-input" />
-            <div class="input-help">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              <span>Air resistance model constant (see methodology)</span>
             </div>
           </div>
         </div>

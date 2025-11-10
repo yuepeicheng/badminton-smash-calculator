@@ -49,6 +49,91 @@ body {
   flex-direction: column;
 }
 
+/* ===== TUTORIAL SECTION ===== */
+.tutorial-section {
+  max-width: 1400px;
+  margin: 2rem auto 0;
+  padding: 0 2rem;
+}
+
+.tutorial-content {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+}
+
+.tutorial-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tutorial-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.tutorial-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border-radius: 0.625rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.tutorial-step:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.step-text strong {
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .tutorial-section {
+    padding: 0 1rem;
+  }
+
+  .tutorial-content {
+    padding: 1rem 1.25rem;
+  }
+
+  .tutorial-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===== HEADER ===== */
 .header {
   background: var(--bg-secondary);
@@ -204,6 +289,35 @@ body {
 /* ===== VIDEO PLAYER ===== */
 .video-player-container {
   margin-top: 1.5rem;
+  position: relative;
+}
+
+.close-video-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.close-video-btn:hover {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1);
+}
+
+.close-video-btn svg {
+  color: white;
 }
 
 #videoPlayer {
@@ -384,6 +498,84 @@ body {
 }
 
 .use-time-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== ANGLE MEASUREMENT TOOL ===== */
+.angle-tool-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.angle-tool-container {
+  background: var(--surface);
+  border-radius: 0.875rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+}
+
+#angleCanvas {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  background: var(--bg-tertiary);
+  border-radius: 0.625rem;
+  cursor: crosshair;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.angle-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.625rem;
+  margin-bottom: 1rem;
+}
+
+.angle-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.angle-value {
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+
+.use-angle-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.use-angle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.use-angle-btn:active {
   transform: translateY(0);
 }
 

@@ -7,7 +7,7 @@
    - Has keyboard "Enter" binding, reset button, and variable explanations.
 */
 
-const defaultKx = 0.05; // placeholder — change to your measured k_x if you wish
+const defaultKx = 0.2; // Default drag constant (hidden from user interface)
 
 function fmt(n, dp = 3) {
   if (!isFinite(n)) return '—';
@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
       distance: document.getElementById('inputDistance'),
       time: document.getElementById('inputTime'),
       angle: document.getElementById('inputAngle'),
-      kx: document.getElementById('inputKx'),
       btnCalc: document.getElementById('btnCalc'),
       btnClear: document.getElementById('btnClear'),
       outMps: document.getElementById('outMps'),
@@ -50,9 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
-
-    // Initialize kx input if empty
-    if (!el.kx.value) el.kx.value = defaultKx;
 
     // Helpers
     function showError(msg) {
@@ -95,21 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const x = Number(el.distance.value);
         const t = Number(el.time.value);
         const theta = Number(el.angle.value);
-        const kx = Number(el.kx.value);
+        const kx = defaultKx; // Use the default constant
 
-        if (![x,t,theta,kx].every(v => isFinite(v))) {
+        if (![x,t,theta].every(v => isFinite(v))) {
           showError('Please enter valid numeric values for all fields.');
           hideResults();
-          console.log('Invalid numeric inputs:', {x,t,theta,kx});
+          console.log('Invalid numeric inputs:', {x,t,theta});
           return;
         }
         if (t <= 0) {
           showError('Time must be > 0 seconds.');
-          hideResults();
-          return;
-        }
-        if (kx === 0) {
-          showError('kₓ must be non-zero for this formula.');
           hideResults();
           return;
         }
@@ -146,17 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset
     el.btnClear.addEventListener('click', () => {
-      el.distance.value = 5.00;
-      el.time.value = 0.2;
-      el.angle.value = 5;
-      el.kx.value = defaultKx;
+      el.distance.value = 9.50;
+      el.time.value = 0.5;
+      el.angle.value = 8;
       hideError();
       hideResults();
       console.log('Reset to defaults.');
     });
 
     // Enter key -> calculate
-    ['inputDistance','inputTime','inputAngle','inputKx'].forEach(id => {
+    ['inputDistance','inputTime','inputAngle'].forEach(id => {
       const node = document.getElementById(id);
       if (node) {
         node.addEventListener('keydown', (e) => {
@@ -196,6 +186,8 @@ function initVideoAnalysis() {
   const videoUpload = document.getElementById('videoUpload');
   const videoContainer = document.getElementById('videoContainer');
   const videoPlayer = document.getElementById('videoPlayer');
+  const videoUploadArea = document.querySelector('.video-upload-area');
+  const closeVideoBtn = document.getElementById('closeVideoBtn');
   const startSlider = document.getElementById('startSlider');
   const endSlider = document.getElementById('endSlider');
   const sliderRange = document.getElementById('sliderRange');
@@ -261,6 +253,10 @@ function initVideoAnalysis() {
       videoPlayer.addEventListener('loadedmetadata', () => {
         videoDuration = videoPlayer.duration;
         videoContainer.classList.remove('hidden');
+        // Hide the upload box after video is uploaded
+        if (videoUploadArea) {
+          videoUploadArea.classList.add('hidden');
+        }
 
         // Initialize sliders
         startSlider.value = 0;
@@ -271,6 +267,23 @@ function initVideoAnalysis() {
       });
     }
   });
+
+  // Handle close video button
+  if (closeVideoBtn) {
+    closeVideoBtn.addEventListener('click', () => {
+      // Hide video container
+      videoContainer.classList.add('hidden');
+      // Show upload area again
+      if (videoUploadArea) {
+        videoUploadArea.classList.remove('hidden');
+      }
+      // Reset video
+      videoPlayer.src = '';
+      videoUpload.value = '';
+      videoDuration = 0;
+      console.log('Video closed, ready for new upload');
+    });
+  }
 
   // Slider event listeners
   startSlider.addEventListener('input', () => {
@@ -327,3 +340,203 @@ function initVideoAnalysis() {
 
   console.log('Video analysis with dual slider initialized');
 }
+
+// Angle Measurement Tool
+function initAngleTool() {
+  const canvas = document.getElementById('angleCanvas');
+  const angleValue = document.getElementById('angleValue');
+  const btnUseAngle = document.getElementById('btnUseAngle');
+
+  if (!canvas || !angleValue || !btnUseAngle) {
+    console.log('Angle tool elements not found - skipping angle tool functionality');
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  // State variables
+  let baseLineStart = { x: 150, y: 200 };
+  let baseLineEnd = { x: 450, y: 200 };
+  let angleLineEnd = { x: 450, y: 100 };
+  let dragging = null;
+  let currentAngle = 0;
+
+  // Calculate angle between two lines
+  function calculateAngle() {
+    // Vector from base line start to end
+    const baseVector = {
+      x: baseLineEnd.x - baseLineStart.x,
+      y: baseLineEnd.y - baseLineStart.y
+    };
+
+    // Vector from base line end to angle line end
+    const angleVector = {
+      x: angleLineEnd.x - baseLineEnd.x,
+      y: angleLineEnd.y - baseLineEnd.y
+    };
+
+    // Calculate angle using atan2
+    const baseAngle = Math.atan2(baseVector.y, baseVector.x);
+    const lineAngle = Math.atan2(angleVector.y, angleVector.x);
+
+    // Get the difference and convert to degrees
+    let angle = (lineAngle - baseAngle) * (180 / Math.PI);
+
+    // Normalize to 0-360 range
+    if (angle < 0) angle += 360;
+
+    // Return the acute angle (0-180)
+    if (angle > 180) angle = 360 - angle;
+
+    return angle;
+  }
+
+  // Draw the angle measurement tool
+  function draw() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Style settings
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+
+    // Draw base line (horizontal reference)
+    ctx.strokeStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.moveTo(baseLineStart.x, baseLineStart.y);
+    ctx.lineTo(baseLineEnd.x, baseLineEnd.y);
+    ctx.stroke();
+
+    // Draw angle line (adjustable)
+    ctx.strokeStyle = '#60a5fa';
+    ctx.beginPath();
+    ctx.moveTo(baseLineEnd.x, baseLineEnd.y);
+    ctx.lineTo(angleLineEnd.x, angleLineEnd.y);
+    ctx.stroke();
+
+    // Draw angle arc
+    const radius = 50;
+    const baseAngle = Math.atan2(baseLineEnd.y - baseLineStart.y, baseLineEnd.x - baseLineStart.x);
+    const lineAngle = Math.atan2(angleLineEnd.y - baseLineEnd.y, angleLineEnd.x - baseLineEnd.x);
+
+    ctx.strokeStyle = '#10b981';
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+    ctx.beginPath();
+    ctx.arc(baseLineEnd.x, baseLineEnd.y, radius, baseAngle, lineAngle, lineAngle < baseAngle);
+    ctx.stroke();
+    ctx.lineTo(baseLineEnd.x, baseLineEnd.y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw control points
+    const drawPoint = (point, color) => {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    };
+
+    drawPoint(baseLineStart, '#3b82f6');
+    drawPoint(baseLineEnd, '#10b981');
+    drawPoint(angleLineEnd, '#60a5fa');
+
+    // Update angle display
+    currentAngle = calculateAngle();
+    angleValue.textContent = currentAngle.toFixed(1) + '°';
+  }
+
+  // Get mouse position relative to canvas
+  function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  // Check if mouse is near a point
+  function isNearPoint(mouse, point, threshold = 15) {
+    const dx = mouse.x - point.x;
+    const dy = mouse.y - point.y;
+    return Math.sqrt(dx * dx + dy * dy) < threshold;
+  }
+
+  // Mouse event handlers
+  canvas.addEventListener('mousedown', (e) => {
+    const mouse = getMousePos(e);
+
+    if (isNearPoint(mouse, baseLineStart)) {
+      dragging = 'baseStart';
+    } else if (isNearPoint(mouse, baseLineEnd)) {
+      dragging = 'baseEnd';
+    } else if (isNearPoint(mouse, angleLineEnd)) {
+      dragging = 'angleEnd';
+    }
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const mouse = getMousePos(e);
+
+    // Update cursor
+    if (isNearPoint(mouse, baseLineStart) || isNearPoint(mouse, baseLineEnd) || isNearPoint(mouse, angleLineEnd)) {
+      canvas.style.cursor = 'pointer';
+    } else {
+      canvas.style.cursor = 'crosshair';
+    }
+
+    if (dragging) {
+      if (dragging === 'baseStart') {
+        baseLineStart = mouse;
+      } else if (dragging === 'baseEnd') {
+        baseLineEnd = mouse;
+        // Keep angle line attached to base line end
+      } else if (dragging === 'angleEnd') {
+        angleLineEnd = mouse;
+      }
+      draw();
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    dragging = null;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    dragging = null;
+    canvas.style.cursor = 'crosshair';
+  });
+
+  // Use angle button
+  btnUseAngle.addEventListener('click', () => {
+    const angleInput = document.getElementById('inputAngle');
+    if (angleInput && currentAngle > 0) {
+      angleInput.value = currentAngle.toFixed(1);
+
+      // Highlight the angle input briefly
+      angleInput.style.transition = 'all 0.3s ease';
+      angleInput.style.borderColor = 'var(--accent)';
+      angleInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+
+      setTimeout(() => {
+        angleInput.style.borderColor = '';
+        angleInput.style.boxShadow = '';
+      }, 1500);
+
+      console.log('Angle value transferred to calculator:', currentAngle.toFixed(1));
+    }
+  });
+
+  // Initial draw
+  draw();
+  console.log('Angle measurement tool initialized');
+}
+
+// Initialize angle tool when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  initAngleTool();
+});
