@@ -41,13 +41,20 @@
           <span class="step-number">1</span>
           <span class="step-text">Find <strong>time</strong> using video analysis time tool</span>
         </div>
+        <div class="tutorial-arrow">→</div>
         <div class="tutorial-step">
           <span class="step-number">2</span>
-          <span class="step-text">Find <strong>distance</strong> estimate using our court dimension estimates</span>
+          <span class="step-text">Find <strong>distance</strong> estimate using court dimension estimates</span>
         </div>
+        <div class="tutorial-arrow">→</div>
         <div class="tutorial-step">
           <span class="step-number">3</span>
           <span class="step-text">Find <strong>angle</strong> using video analysis angle tool</span>
+        </div>
+        <div class="tutorial-arrow">→</div>
+        <div class="tutorial-step">
+          <span class="step-number">4</span>
+          <span class="step-text">Calculate your <strong>smash velocity</strong></span>
         </div>
       </div>
     </div>
@@ -151,13 +158,25 @@
             <video id="angleVideoPlayer" class="angle-video hidden"></video>
           </div>
           <div class="angle-controls">
-            <button id="btnFreezeVideo" class="angle-control-btn hidden">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-              </svg>
-              Freeze Frame
-            </button>
+            <div class="angle-controls-row">
+              <button id="btnPrevFrame" class="angle-control-btn angle-control-sm hidden">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button id="btnFreezeVideo" class="angle-control-btn hidden">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="6" y="4" width="4" height="16"></rect>
+                  <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+                Freeze Frame
+              </button>
+              <button id="btnNextFrame" class="angle-control-btn angle-control-sm hidden">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
             <button id="btnUnfreezeVideo" class="angle-control-btn hidden">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
