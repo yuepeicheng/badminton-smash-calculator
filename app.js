@@ -14,6 +14,10 @@ function fmt(n, dp = 3) {
   return Number(n).toFixed(dp);
 }
 
+// Video analysis variables
+let startTime = null;
+let endTime = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   try {
     // Grab elements
@@ -198,6 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('app.js loaded (non-video defensive).');
     // Expose debug function
     window._debug_calc = (x,t,theta,kx) => calculateV0(x,t,theta,kx);
+
+    // ===== VIDEO ANALYSIS FUNCTIONALITY =====
+    initVideoAnalysis();
+
   } catch (err) {
     console.error('Fatal init error in app.js:', err);
     const box = document.getElementById('error');
@@ -209,3 +217,117 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+// Video Analysis Functions
+function initVideoAnalysis() {
+  const videoUpload = document.getElementById('videoUpload');
+  const videoContainer = document.getElementById('videoContainer');
+  const videoPlayer = document.getElementById('videoPlayer');
+  const btnSetStart = document.getElementById('btnSetStart');
+  const btnSetEnd = document.getElementById('btnSetEnd');
+  const btnUseTime = document.getElementById('btnUseTime');
+  const startTimeDisplay = document.getElementById('startTimeDisplay');
+  const endTimeDisplay = document.getElementById('endTimeDisplay');
+  const timeDiffValue = document.getElementById('timeDiffValue');
+  const timeDiffResult = document.getElementById('timeDiffResult');
+
+  if (!videoUpload || !videoContainer || !videoPlayer) {
+    console.log('Video analysis elements not found - skipping video functionality');
+    return;
+  }
+
+  // Handle video file upload
+  videoUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('video/')) {
+      const url = URL.createObjectURL(file);
+      videoPlayer.src = url;
+      videoContainer.classList.remove('hidden');
+
+      // Reset markers
+      startTime = null;
+      endTime = null;
+      startTimeDisplay.textContent = '--:--';
+      endTimeDisplay.textContent = '--:--';
+      timeDiffResult.classList.add('hidden');
+
+      console.log('Video loaded:', file.name);
+    }
+  });
+
+  // Format time as MM:SS.mmm
+  function formatTime(seconds) {
+    if (seconds === null || seconds === undefined) return '--:--';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toFixed(3).padStart(6, '0')}`;
+  }
+
+  // Set start point
+  btnSetStart.addEventListener('click', () => {
+    if (videoPlayer.src && !videoPlayer.paused) {
+      startTime = videoPlayer.currentTime;
+      startTimeDisplay.textContent = formatTime(startTime);
+      console.log('Start time set:', startTime);
+      updateTimeDifference();
+    } else if (!videoPlayer.src) {
+      alert('Please upload a video first');
+    } else {
+      alert('Please play the video and pause/click when you want to mark the start point');
+    }
+  });
+
+  // Set end point
+  btnSetEnd.addEventListener('click', () => {
+    if (videoPlayer.src && !videoPlayer.paused) {
+      endTime = videoPlayer.currentTime;
+      endTimeDisplay.textContent = formatTime(endTime);
+      console.log('End time set:', endTime);
+      updateTimeDifference();
+    } else if (!videoPlayer.src) {
+      alert('Please upload a video first');
+    } else {
+      alert('Please play the video and pause/click when you want to mark the end point');
+    }
+  });
+
+  // Calculate and display time difference
+  function updateTimeDifference() {
+    if (startTime !== null && endTime !== null) {
+      const diff = Math.abs(endTime - startTime);
+      timeDiffValue.textContent = diff.toFixed(3);
+      timeDiffResult.classList.remove('hidden');
+      console.log('Time difference:', diff);
+    }
+  }
+
+  // Use calculated time in the main calculator
+  btnUseTime.addEventListener('click', () => {
+    if (startTime !== null && endTime !== null) {
+      const diff = Math.abs(endTime - startTime);
+      const timeInput = document.getElementById('inputTime');
+      if (timeInput) {
+        timeInput.value = diff.toFixed(3);
+        // Scroll to calculator section
+        document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' });
+        console.log('Time value transferred to calculator:', diff);
+
+        // Optional: highlight the time input briefly
+        timeInput.style.background = 'rgba(74,163,255,0.2)';
+        setTimeout(() => {
+          timeInput.style.background = '';
+        }, 1000);
+      }
+    }
+  });
+
+  // Allow setting markers by clicking on the video while it's playing
+  videoPlayer.addEventListener('click', () => {
+    if (!videoPlayer.paused) {
+      // Could add logic here to auto-set start/end based on clicks
+      videoPlayer.pause();
+    }
+  });
+
+  console.log('Video analysis initialized');
+}

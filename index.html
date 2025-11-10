@@ -24,6 +24,8 @@
 
     <nav class="nav">
       <a href="#calculator" class="nav-link">Calculator</a>
+      <a href="#video" class="nav-link">Video Analysis</a>
+      <a href="#court" class="nav-link">Court Dimensions</a>
       <a href="#how" class="nav-link">How it works</a>
       <a href="#method" class="nav-link">Methodology</a>
     </nav>
@@ -72,6 +74,102 @@
       </div>
 
       <div id="error" class="error hidden" role="alert"></div>
+    </section>
+
+    <!-- VIDEO ANALYSIS SECTION -->
+    <section id="video" class="panel full-width">
+      <h2>Video Time Measurement</h2>
+      <p class="hint">Upload a video of your smash and mark the start and end points to measure the exact time interval.</p>
+
+      <div class="video-upload">
+        <input type="file" id="videoUpload" accept="video/*" />
+        <label for="videoUpload" class="upload-label">Choose Video File</label>
+      </div>
+
+      <div id="videoContainer" class="video-container hidden">
+        <video id="videoPlayer" controls></video>
+
+        <div class="video-controls">
+          <div class="time-markers">
+            <div class="marker-group">
+              <label>Start Time:</label>
+              <div class="marker-display">
+                <span id="startTimeDisplay">--:--</span>
+                <button id="btnSetStart" class="small-btn">Set Start Point</button>
+              </div>
+            </div>
+
+            <div class="marker-group">
+              <label>End Time:</label>
+              <div class="marker-display">
+                <span id="endTimeDisplay">--:--</span>
+                <button id="btnSetEnd" class="small-btn">Set End Point</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="timeDiffResult" class="time-result hidden">
+            <div class="result-highlight">
+              <strong>Time Interval:</strong> <span id="timeDiffValue">0.000</span> seconds
+            </div>
+            <button id="btnUseTime" class="accent-btn">Use This Time in Calculator</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COURT DIMENSIONS SECTION -->
+    <section id="court" class="panel full-width">
+      <h2>Badminton Court Dimensions Reference</h2>
+      <p class="hint">Use these standard measurements to help determine the distance your shuttle traveled.</p>
+
+      <div class="court-info-grid">
+        <div class="court-diagram">
+          <div class="court-visual">
+            <div class="court-outline">
+              <div class="court-label top">Net</div>
+              <div class="court-measurement horiz">6.10 m (20 ft)</div>
+              <div class="court-measurement vert">13.40 m (44 ft)</div>
+              <div class="service-line">Service Line</div>
+              <div class="court-label bottom">Baseline</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="court-measurements">
+          <h3>Key Measurements</h3>
+          <div class="measurement-list">
+            <div class="measurement-item">
+              <span class="measure-label">Court Length (Singles & Doubles):</span>
+              <span class="measure-value">13.40 m (44 ft)</span>
+            </div>
+            <div class="measurement-item">
+              <span class="measure-label">Court Width (Doubles):</span>
+              <span class="measure-value">6.10 m (20 ft)</span>
+            </div>
+            <div class="measurement-item">
+              <span class="measure-label">Court Width (Singles):</span>
+              <span class="measure-value">5.18 m (17 ft)</span>
+            </div>
+            <div class="measurement-item">
+              <span class="measure-label">Service Line to Net:</span>
+              <span class="measure-value">1.98 m (6.5 ft)</span>
+            </div>
+            <div class="measurement-item">
+              <span class="measure-label">Service Line to Baseline:</span>
+              <span class="measure-value">4.72 m (15.5 ft)</span>
+            </div>
+            <div class="measurement-item">
+              <span class="measure-label">Net Height (Center):</span>
+              <span class="measure-value">1.524 m (5 ft)</span>
+            </div>
+            <div class="measurement-item">
+              <span class="measure-label">Net Height (Edges):</span>
+              <span class="measure-value">1.55 m (5 ft 1 in)</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- HOW IT WORKS + VARIABLE DETAIL -->
