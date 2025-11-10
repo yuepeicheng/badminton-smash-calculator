@@ -563,43 +563,46 @@ function initAngleTool() {
     ctx.lineTo(angleLineEnd.x, angleLineEnd.y);
     ctx.stroke();
 
-    // Draw angle arc - always show the acute angle between horizontal and angle line
-    const radius = 60;
-    const baseDirection = baseLineEnd.x - baseLineStart.x; // Positive = right, negative = left
+const radius = 60;
 
-    // Calculate vectors
-    const dx = angleLineEnd.x - baseLineEnd.x;
-    const dy = angleLineEnd.y - baseLineStart.y;
+// Vector for base line
+const baseDx = baseLineEnd.x - baseLineStart.x;
+const baseDy = baseLineEnd.y - baseLineStart.y;
 
-    let startAngleRad, endAngleRad;
+// Vector for angle line
+const angleDx = angleLineEnd.x - baseLineEnd.x;
+const angleDy = angleLineEnd.y - baseLineEnd.y;
 
-    if (baseDirection > 0) {
-      // Base line points RIGHT
-      // Arc should go from horizontal (0) downward to the angle line
-      startAngleRad = 0;
-      endAngleRad = Math.atan2(dy, dx);
-    } else {
-      // Base line points LEFT
-      // Arc should go from horizontal (π) downward to the angle line
-      // The angle line is on the left side, so we measure from π going clockwise
-      startAngleRad = Math.PI;
-      endAngleRad = Math.PI + Math.atan2(dy, -dx);
-    }
+// Get absolute angles from +x axis
+const baseAngle = Math.atan2(baseDy, baseDx);
+const angleAngle = Math.atan2(angleDy, angleDx);
 
-    ctx.strokeStyle = '#10b981';
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(baseLineEnd.x, baseLineStart.y, radius, startAngleRad, endAngleRad);
-    ctx.stroke();
+// Find smallest angular difference
+let startAngleRad = baseAngle;
+let endAngleRad = angleAngle;
 
-    // Fill the arc
-    ctx.beginPath();
-    ctx.moveTo(baseLineEnd.x, baseLineStart.y);
-    ctx.arc(baseLineEnd.x, baseLineStart.y, radius, startAngleRad, endAngleRad);
-    ctx.lineTo(baseLineEnd.x, baseLineStart.y);
-    ctx.closePath();
-    ctx.fill();
+// Normalize so the arc always goes the *shorter* way
+let diff = endAngleRad - startAngleRad;
+if (diff > Math.PI) endAngleRad -= 2 * Math.PI;
+else if (diff < -Math.PI) endAngleRad += 2 * Math.PI;
+
+// Determine direction (clockwise or counter)
+const anticlockwise = diff < 0;
+
+// Draw
+ctx.strokeStyle = '#10b981';
+ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+ctx.lineWidth = 3;
+
+ctx.beginPath();
+ctx.arc(baseLineEnd.x, baseLineEnd.y, radius, startAngleRad, endAngleRad, anticlockwise);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(baseLineEnd.x, baseLineEnd.y);
+ctx.arc(baseLineEnd.x, baseLineEnd.y, radius, startAngleRad, endAngleRad, anticlockwise);
+ctx.closePath();
+ctx.fill();
 
     // Draw control points
     const drawPoint = (point, color, label) => {
