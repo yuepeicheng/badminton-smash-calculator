@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Smash Speed Calculator — Math IA</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Google tag (gtag.js) -->
+  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-264PJ31JW2"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -16,234 +19,229 @@
   </script>
 </head>
 <body>
-  <header class="wrap header">
-    <div>
-      <h1>Smash Speed Calculator</h1>
-      <p class="subtitle">Calculate your badminton smash speed (v₀) from your measured distance, time, and angle. -By Peicheng Yue </p>
+  <header class="header">
+    <div class="header-content">
+      <div class="branding">
+        <h1>Badminton Smash Calculator</h1>
+        <p class="subtitle">Precise smash speed analysis using physics-based modeling</p>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link active">Calculator</a>
+        <a href="methodology.html" class="nav-link">Methodology</a>
+      </nav>
     </div>
-
-    <nav class="nav">
-      <a href="#calculator" class="nav-link">Calculator</a>
-      <a href="#video" class="nav-link">Video Analysis</a>
-      <a href="#court" class="nav-link">Court Dimensions</a>
-      <a href="#how" class="nav-link">How it works</a>
-      <a href="#method" class="nav-link">Methodology</a>
-    </nav>
   </header>
 
-  <main class="wrap grid-main">
+  <main class="main-container">
 
-    <!-- CALCULATOR -->
-    <section id="calculator" class="panel">
-      <h2>Calculator</h2>
-
-      <p class="hint">All calculations happen locally in your browser. Enter your calculated values (defaults provided).</p>
-
-      <div class="form-grid">
-        <label>
-          Distance x(t) &nbsp;<span class="muted">(meters)</span>
-          <input id="inputDistance" type="number" step="0.01" value="9.50" />
-        </label>
-
-        <label>
-          Time t &nbsp;<span class="muted">(seconds)</span>
-          <input id="inputTime" type="number" step="0.001" value="0.5" />
-        </label>
-
-        <label>
-          Angle θ &nbsp;<span class="muted">(degrees)</span>
-          <input id="inputAngle" type="number" step="0.1" value="8" />
-        </label>
-
-        <label>
-          Drag constant kₓ &nbsp;<span class="muted">(1 / m — We suggest using the default value, please read the methodology section for more information regarding this variable)</span>
-          <input id="inputKx" type="number" step="0.0001" value="0.2" />
-        </label>
+    <!-- Left Side: Video Analysis -->
+    <section class="video-section">
+      <div class="section-header">
+        <h2>Video Analysis</h2>
+        <p class="section-description">Upload your smash video and precisely mark the shuttle's trajectory</p>
       </div>
 
-      <div class="row">
-        <button id="btnCalc">Calculate Smash Speed (v₀) !</button>
-        <button id="btnClear" class="ghost">Reset</button>
-      </div>
-
-      <div id="resultCard" class="result-card hidden">
-        <div class="result-row"><span>v₀ (m/s):</span><span id="outMps">—</span></div>
-        <div class="result-row"><span>v₀ (km/h):</span><span id="outKmh">—</span></div>
-        <div class="result-row"><span>v₀ (mph):</span><span id="outMph">—</span></div>
-        <div class="small muted" id="outNotes"></div>
-      </div>
-
-      <div id="error" class="error hidden" role="alert"></div>
-    </section>
-
-    <!-- VIDEO ANALYSIS SECTION -->
-    <section id="video" class="panel full-width">
-      <h2>Video Time Measurement</h2>
-      <p class="hint">Upload a video of your smash and mark the start and end points to measure the exact time interval.</p>
-
-      <div class="video-upload">
+      <div class="video-upload-area">
         <input type="file" id="videoUpload" accept="video/*" />
-        <label for="videoUpload" class="upload-label">Choose Video File</label>
+        <label for="videoUpload" class="upload-zone">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span class="upload-text">Click to upload video</span>
+          <span class="upload-hint">MP4, MOV, AVI up to 500MB</span>
+        </label>
       </div>
 
-      <div id="videoContainer" class="video-container hidden">
+      <div id="videoContainer" class="video-player-container hidden">
         <video id="videoPlayer" controls></video>
 
-        <div class="video-controls">
-          <div class="time-markers">
-            <div class="marker-group">
-              <label>Start Time:</label>
-              <div class="marker-display">
-                <span id="startTimeDisplay">--:--</span>
-                <button id="btnSetStart" class="small-btn">Set Start Point</button>
-              </div>
-            </div>
-
-            <div class="marker-group">
-              <label>End Time:</label>
-              <div class="marker-display">
-                <span id="endTimeDisplay">--:--</span>
-                <button id="btnSetEnd" class="small-btn">Set End Point</button>
-              </div>
+        <div class="timeline-container">
+          <div class="timeline-header">
+            <span class="timeline-label">Select Time Range</span>
+            <div class="time-display">
+              <span class="time-value" id="timeDiffValue">0.000s</span>
             </div>
           </div>
 
-          <div id="timeDiffResult" class="time-result hidden">
-            <div class="result-highlight">
-              <strong>Time Interval:</strong> <span id="timeDiffValue">0.000</span> seconds
+          <div class="dual-slider-wrapper">
+            <div class="slider-track">
+              <div class="slider-range" id="sliderRange"></div>
             </div>
-            <button id="btnUseTime" class="accent-btn">Use This Time in Calculator</button>
+            <input type="range" id="startSlider" class="timeline-slider slider-start" min="0" max="100" value="0" step="0.001">
+            <input type="range" id="endSlider" class="timeline-slider slider-end" min="0" max="100" value="100" step="0.001">
+          </div>
+
+          <div class="timeline-markers">
+            <div class="marker start-marker">
+              <span class="marker-label">Start</span>
+              <span class="marker-time" id="startTimeDisplay">0:00.000</span>
+            </div>
+            <div class="marker end-marker">
+              <span class="marker-label">End</span>
+              <span class="marker-time" id="endTimeDisplay">0:00.000</span>
+            </div>
+          </div>
+
+          <button id="btnUseTime" class="use-time-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Use This Time
+          </button>
+        </div>
+      </div>
+
+      <!-- Court Dimensions -->
+      <div class="court-reference">
+        <h3 class="subsection-title">Court Reference</h3>
+        <div class="court-visual-compact">
+          <div class="court-diagram-svg">
+            <svg viewBox="0 0 200 400" class="court-svg">
+              <rect x="10" y="10" width="180" height="380" fill="none" stroke="rgba(74,163,255,0.3)" stroke-width="2"/>
+              <line x1="10" y1="200" x2="190" y2="200" stroke="rgba(74,163,255,0.5)" stroke-width="2"/>
+              <line x1="10" y1="90" x2="190" y2="90" stroke="rgba(74,163,255,0.3)" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="10" y1="310" x2="190" y2="310" stroke="rgba(74,163,255,0.3)" stroke-width="1" stroke-dasharray="4"/>
+              <text x="100" y="205" fill="rgba(74,163,255,0.9)" text-anchor="middle" font-size="10" font-weight="600">NET</text>
+            </svg>
+          </div>
+          <div class="court-measurements-compact">
+            <div class="measure-item"><span>Full Length:</span><strong>13.40m</strong></div>
+            <div class="measure-item"><span>Width (Doubles):</span><strong>6.10m</strong></div>
+            <div class="measure-item"><span>Service to Net:</span><strong>1.98m</strong></div>
+            <div class="measure-item"><span>Service to Back:</span><strong>4.72m</strong></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- COURT DIMENSIONS SECTION -->
-    <section id="court" class="panel full-width">
-      <h2>Badminton Court Dimensions Reference</h2>
-      <p class="hint">Use these standard measurements to help determine the distance your shuttle traveled.</p>
+    <!-- Right Side: Calculator -->
+    <section class="calculator-section">
+      <div class="section-header">
+        <h2>Calculate Smash Speed</h2>
+        <p class="section-description">Enter your measurements to determine initial velocity (v₀)</p>
+      </div>
 
-      <div class="court-info-grid">
-        <div class="court-diagram">
-          <div class="court-visual">
-            <div class="court-outline">
-              <div class="court-label top">Net</div>
-              <div class="court-measurement horiz">6.10 m (20 ft)</div>
-              <div class="court-measurement vert">13.40 m (44 ft)</div>
-              <div class="service-line">Service Line</div>
-              <div class="court-label bottom">Baseline</div>
+      <div class="calculator-panel">
+        <div class="input-group">
+          <div class="input-wrapper">
+            <label class="input-label">
+              <span class="label-text">Distance <em>x(t)</em></span>
+              <span class="label-unit">meters</span>
+            </label>
+            <input id="inputDistance" type="number" step="0.01" value="9.50" class="calc-input" />
+            <div class="input-help">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Horizontal distance the shuttle traveled</span>
+            </div>
+          </div>
+
+          <div class="input-wrapper">
+            <label class="input-label">
+              <span class="label-text">Time <em>t</em></span>
+              <span class="label-unit">seconds</span>
+            </label>
+            <input id="inputTime" type="number" step="0.001" value="0.5" class="calc-input" />
+            <div class="input-help">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Time interval from hit to landing</span>
+            </div>
+          </div>
+
+          <div class="input-wrapper">
+            <label class="input-label">
+              <span class="label-text">Angle <em>θ</em></span>
+              <span class="label-unit">degrees</span>
+            </label>
+            <input id="inputAngle" type="number" step="0.1" value="8" class="calc-input" />
+            <div class="input-help">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Launch angle relative to horizontal</span>
+            </div>
+          </div>
+
+          <div class="input-wrapper">
+            <label class="input-label">
+              <span class="label-text">Drag Constant <em>kₓ</em></span>
+              <span class="label-unit">1/m</span>
+            </label>
+            <input id="inputKx" type="number" step="0.0001" value="0.2" class="calc-input" />
+            <div class="input-help">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Air resistance model constant (see methodology)</span>
             </div>
           </div>
         </div>
 
-        <div class="court-measurements">
-          <h3>Key Measurements</h3>
-          <div class="measurement-list">
-            <div class="measurement-item">
-              <span class="measure-label">Court Length (Singles & Doubles):</span>
-              <span class="measure-value">13.40 m (44 ft)</span>
+        <div class="formula-display">
+          <div class="formula-label">Formula</div>
+          <code class="formula-code">v₀ = (e^(kₓ · x) − 1) / (kₓ · t · cos θ)</code>
+        </div>
+
+        <div class="button-group">
+          <button id="btnCalc" class="btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Calculate Speed
+          </button>
+          <button id="btnClear" class="btn-secondary">Reset</button>
+        </div>
+
+        <div id="error" class="error-message hidden" role="alert"></div>
+
+        <div id="resultCard" class="results-display hidden">
+          <div class="results-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <h3>Results</h3>
+          </div>
+          <div class="result-grid">
+            <div class="result-item primary">
+              <span class="result-label">Initial Velocity</span>
+              <span class="result-value" id="outMps">—</span>
+              <span class="result-unit">m/s</span>
             </div>
-            <div class="measurement-item">
-              <span class="measure-label">Court Width (Doubles):</span>
-              <span class="measure-value">6.10 m (20 ft)</span>
+            <div class="result-item">
+              <span class="result-label">Speed</span>
+              <span class="result-value" id="outKmh">—</span>
+              <span class="result-unit">km/h</span>
             </div>
-            <div class="measurement-item">
-              <span class="measure-label">Court Width (Singles):</span>
-              <span class="measure-value">5.18 m (17 ft)</span>
-            </div>
-            <div class="measurement-item">
-              <span class="measure-label">Service Line to Net:</span>
-              <span class="measure-value">1.98 m (6.5 ft)</span>
-            </div>
-            <div class="measurement-item">
-              <span class="measure-label">Service Line to Baseline:</span>
-              <span class="measure-value">4.72 m (15.5 ft)</span>
-            </div>
-            <div class="measurement-item">
-              <span class="measure-label">Net Height (Center):</span>
-              <span class="measure-value">1.524 m (5 ft)</span>
-            </div>
-            <div class="measurement-item">
-              <span class="measure-label">Net Height (Edges):</span>
-              <span class="measure-value">1.55 m (5 ft 1 in)</span>
+            <div class="result-item">
+              <span class="result-label">Speed</span>
+              <span class="result-value" id="outMph">—</span>
+              <span class="result-unit">mph</span>
             </div>
           </div>
+          <div class="result-notes" id="outNotes"></div>
         </div>
       </div>
     </section>
-
-    <!-- HOW IT WORKS + VARIABLE DETAIL -->
-    <aside id="how" class="panel">
-      <h2>How it works (math)</h2>
-
-      <div class="card-light">
-        <!-- Render the formula plainly (image earlier) -->
-        <div class="formula">
-          <code>v₀ = (e^(kₓ · x(t)) − 1) / (kₓ · t · cos θ)</code>
-        </div>
-
-        <details open>
-          <summary>Short summary</summary>
-          <p>
-            The formula comes from an exponential model of motion with a parameter <strong>kₓ</strong>. For a measured
-            distance <em>x(t)</em> in a measured time <em>t</em> and launch angle θ, we solve for the initial speed v₀ as shown above.
-          </p>
-        </details>
-
-        <label class="var-explain-label">Explain a variable:
-          <select id="varSelect">
-            <option value="">(choose a variable)</option>
-            <option value="x">x(t) — distance</option>
-            <option value="t">t — time</option>
-            <option value="theta">θ — angle</option>
-            <option value="kx">kₓ — model constant</option>
-          </select>
-        </label>
-        <div id="varExplain" class="muted small">Select a variable to see a short explanation.</div>
-      </div>
-
-      <details id="mathDetails">
-        <summary>Step-by-step math</summary>
-        <ol>
-          <li>Plug in your measured <code>x(t)</code>, <code>t</code>, and angle θ (converted to radians in the code).</li>
-          <li>Compute <code>numerator = e^(kₓ * x) - 1</code>.</li>
-          <li>Compute <code>denominator = kₓ * t * cos(θ)</code>. If denominator ≈ 0 the formula is invalid — check t and θ.</li>
-          <li>Then <code>v₀ = numerator / denominator</code>. Units: m/s (converted below).</li>
-          <li>We include simple UI validation and small notes about typical numeric ranges.</li>
-        </ol>
-      </details>
-    </aside>
-
-    <!-- METHODOLOGY -->
-    <section id="method" class="panel">
-      <h2>Methodology, Aim & Notes</h2>
-
-      <details>
-        <summary>Project aim</summary>
-        <p>
-          xxx
-        </p>
-      </details>
-
-      <details>
-        <summary>Methodology (detailed)</summary>
-        <p>
-          xxx
-        </p>
-        <ul>
-          <li>Data collection (how you measured distances and times).</li>
-          <li>Choice and justification of <code>kₓ</code> (drag/decay constant) and how you validated it.</li>
-          <li>Limitations — camera parallax, angle measurement error, shuttle spin, measurement noise.</li>
-          <li>Validation: how you compared results (e.g., known speed ranges, repeated measurements).</li>
-        </ul>
-      </details>
-
-    </section>
-
   </main>
 
-  <footer class="wrap footer">
-    <div class="small muted">© Peicheng Yue — 2025</div>
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Peicheng Yue — Math IA Project</p>
+    </div>
   </footer>
 
   <script src="app.js"></script>

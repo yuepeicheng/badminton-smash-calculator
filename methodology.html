@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Methodology — Badminton Smash Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-264PJ31JW2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-264PJ31JW2');
+  </script>
+
+  <style>
+    .methodology-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .methodology-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-xl);
+    }
+
+    .methodology-section h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .methodology-section h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent-light);
+      margin: 2rem 0 1rem 0;
+    }
+
+    .methodology-section p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    .methodology-section ul, .methodology-section ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .methodology-section li {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .methodology-section code {
+      background: var(--surface);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      font-size: 0.9em;
+      color: var(--accent-light);
+      border: 1px solid var(--border);
+    }
+
+    .formula-box {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 0.875rem;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+
+    .formula-box code {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: block;
+      margin-top: 0.5rem;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .warning-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.02) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .info-box strong, .warning-box strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .info-box strong {
+      color: var(--success);
+    }
+
+    .warning-box strong {
+      color: var(--warning);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="branding">
+        <h1>Badminton Smash Calculator</h1>
+        <p class="subtitle">Precise smash speed analysis using physics-based modeling</p>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Calculator</a>
+        <a href="methodology.html" class="nav-link active">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="methodology-container">
+    <section class="methodology-section">
+      <h2>Project Aim</h2>
+      <p>
+        This Mathematics Internal Assessment explores the physics of badminton smash speeds through mathematical modeling.
+        The primary aim is to develop a practical calculator that determines initial velocity (v₀) of a badminton shuttle
+        using measurable parameters: distance traveled, time interval, launch angle, and air resistance.
+      </p>
+      <p>
+        By combining projectile motion principles with exponential drag modeling, this calculator provides athletes and
+        coaches with a tool to analyze smash performance without expensive high-speed camera equipment.
+      </p>
+    </section>
+
+    <section class="methodology-section">
+      <h2>Mathematical Model</h2>
+
+      <h3>The Formula</h3>
+      <div class="formula-box">
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">Initial Velocity</p>
+        <code>v₀ = (e^(kₓ · x) − 1) / (kₓ · t · cos θ)</code>
+      </div>
+
+      <h3>Variables Explained</h3>
+      <ul>
+        <li><strong>v₀</strong> — Initial velocity of the shuttle at the moment of impact (m/s)</li>
+        <li><strong>x</strong> — Horizontal distance traveled by the shuttle (meters)</li>
+        <li><strong>t</strong> — Time interval from hit to landing (seconds)</li>
+        <li><strong>θ</strong> — Launch angle relative to horizontal plane (degrees)</li>
+        <li><strong>kₓ</strong> — Drag coefficient representing air resistance (1/m)</li>
+      </ul>
+
+      <h3>Derivation Overview</h3>
+      <p>
+        The formula derives from Newton's second law applied to projectile motion with exponential air resistance.
+        Unlike simple parabolic motion, badminton shuttles experience significant drag force proportional to velocity.
+      </p>
+      <ol>
+        <li>Start with horizontal equation of motion: <code>dx/dt = v₀ · cos(θ) · e^(-kₓ · x)</code></li>
+        <li>Separate variables and integrate with respect to time</li>
+        <li>Apply boundary conditions: x(0) = 0 and x(t) = measured distance</li>
+        <li>Solve for v₀ to obtain the formula above</li>
+      </ol>
+
+      <div class="info-box">
+        <strong>Key Assumption</strong>
+        <p style="margin: 0; color: var(--text-secondary);">
+          The model assumes exponential velocity decay due to air resistance, which research shows is appropriate
+          for badminton shuttles in the speed ranges typical of competitive play (50-400 km/h).
+        </p>
+      </div>
+    </section>
+
+    <section class="methodology-section">
+      <h2>Data Collection Methodology</h2>
+
+      <h3>Measuring Distance (x)</h3>
+      <p>
+        Use the court dimensions reference to accurately measure horizontal distance:
+      </p>
+      <ul>
+        <li>Record the landing position relative to known court markings</li>
+        <li>Measure from the point of impact to landing point</li>
+        <li>Account for camera angle and parallax if using video analysis</li>
+        <li>Recommended accuracy: ±0.1 meters</li>
+      </ul>
+
+      <h3>Measuring Time (t)</h3>
+      <p>
+        Time measurement is critical for accuracy. Two methods are supported:
+      </p>
+      <ul>
+        <li><strong>Video Analysis:</strong> Use the built-in video tool with dual sliders to mark exact frames of impact and landing</li>
+        <li><strong>High-Speed Camera:</strong> Frame-by-frame analysis at 120+ fps for precision</li>
+        <li>Recommended accuracy: ±0.01 seconds</li>
+      </ul>
+
+      <h3>Measuring Angle (θ)</h3>
+      <p>
+        Launch angle significantly affects results:
+      </p>
+      <ul>
+        <li>Use video from a side perspective perpendicular to the smash direction</li>
+        <li>Measure angle between racket face and horizontal at moment of contact</li>
+        <li>Typical smash angles range from -5° to +15°</li>
+        <li>Recommended accuracy: ±1 degree</li>
+      </ul>
+
+      <h3>Drag Constant (kₓ)</h3>
+      <p>
+        The drag constant is determined experimentally:
+      </p>
+      <ul>
+        <li><strong>Default value:</strong> 0.2 m⁻¹ (suitable for standard conditions)</li>
+        <li>Can be calibrated by measuring known-speed shots and solving for kₓ</li>
+        <li>Factors affecting kₓ: shuttle condition, altitude, humidity, temperature</li>
+        <li>For most applications, the default value provides reasonable accuracy (±10%)</li>
+      </ul>
+
+      <div class="warning-box">
+        <strong>Important Note</strong>
+        <p style="margin: 0; color: var(--text-secondary);">
+          Measurement accuracy directly impacts calculated velocity. Errors in time measurement have the greatest effect.
+          A 0.01s error in a 0.5s flight time can cause ~10% error in calculated speed.
+        </p>
+      </div>
+    </section>
+
+    <section class="methodology-section">
+      <h2>Limitations & Considerations</h2>
+
+      <h3>Model Limitations</h3>
+      <ul>
+        <li><strong>Shuttle spin:</strong> Rotation effects are not modeled, may affect trajectories</li>
+        <li><strong>Vertical motion:</strong> Simplified treatment of vertical component and gravity</li>
+        <li><strong>Wind effects:</strong> Outdoor measurements require calm conditions</li>
+        <li><strong>Shuttle degradation:</strong> Damaged shuttles have different aerodynamic properties</li>
+      </ul>
+
+      <h3>Measurement Challenges</h3>
+      <ul>
+        <li><strong>Camera parallax:</strong> Angle errors if camera not perpendicular to smash direction</li>
+        <li><strong>Frame rate:</strong> Low frame rates reduce time measurement precision</li>
+        <li><strong>Lighting:</strong> Poor lighting makes frame identification difficult</li>
+        <li><strong>Occlusion:</strong> Player or net may block shuttle visibility</li>
+      </ul>
+
+      <h3>Validation</h3>
+      <p>
+        Results should be validated against known ranges:
+      </p>
+      <ul>
+        <li>Professional players: 300-400 km/h (80-110 m/s)</li>
+        <li>Advanced players: 200-300 km/h (55-80 m/s)</li>
+        <li>Intermediate players: 150-200 km/h (40-55 m/s)</li>
+        <li>World record (male): ~493 km/h (~137 m/s)</li>
+      </ul>
+
+      <div class="info-box">
+        <strong>Best Practices</strong>
+        <p style="margin: 0; color: var(--text-secondary);">
+          For most accurate results: Use high frame-rate video (240+ fps), measure multiple smashes and average results,
+          ensure camera is positioned perpendicular to smash direction, use fresh shuttles in controlled indoor conditions.
+        </p>
+      </div>
+    </section>
+
+    <section class="methodology-section">
+      <h2>References & Further Reading</h2>
+      <ul>
+        <li>Cohen, C., et al. "The physics of badminton." <em>New Journal of Physics</em>, 2015.</li>
+        <li>Alam, F., et al. "Aerodynamics of badminton shuttlecocks." <em>Procedia Engineering</em>, 2010.</li>
+        <li>Chan, C.M., Rossmann, J.S. "Badminton shuttlecock aerodynamics." <em>Sports Engineering</em>, 2012.</li>
+        <li>International Badminton Federation. "Laws of Badminton." 2024.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Peicheng Yue — Math IA Project</p>
+    </div>
+  </footer>
+</body>
+</html>

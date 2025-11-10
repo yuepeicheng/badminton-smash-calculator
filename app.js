@@ -33,9 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
       outMph: document.getElementById('outMph'),
       outNotes: document.getElementById('outNotes'),
       resultCard: document.getElementById('resultCard'),
-      errorBox: document.getElementById('error'),
-      varSelect: document.getElementById('varSelect'),
-      varExplain: document.getElementById('varExplain')
+      errorBox: document.getElementById('error')
     };
 
     // Check existence of required elements
@@ -157,31 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Reset to defaults.');
     });
 
-    // Variable explain select
-    el.varSelect.addEventListener('change', (ev) => {
-      const v = ev.target.value;
-      if (!v) {
-        el.varExplain.textContent = 'Select a variable to see a short explanation.';
-        return;
-      }
-      let text = '';
-      switch (v) {
-        case 'x':
-          text = 'x(t): measured distance travelled by the shuttle (meters). Use same units as kₓ.';
-          break;
-        case 't':
-          text = 't: measured time interval (seconds).';
-          break;
-        case 'theta':
-          text = 'θ: launch angle (degrees).';
-          break;
-        case 'kx':
-          text = 'kₓ: model constant (1/m). Calibrate experimentally.';
-          break;
-      }
-      el.varExplain.textContent = text;
-    });
-
     // Enter key -> calculate
     ['inputDistance','inputTime','inputAngle','inputKx'].forEach(id => {
       const node = document.getElementById(id);
@@ -218,22 +191,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Video Analysis Functions
+// Video Analysis Functions with Dual Slider
 function initVideoAnalysis() {
   const videoUpload = document.getElementById('videoUpload');
   const videoContainer = document.getElementById('videoContainer');
   const videoPlayer = document.getElementById('videoPlayer');
-  const btnSetStart = document.getElementById('btnSetStart');
-  const btnSetEnd = document.getElementById('btnSetEnd');
-  const btnUseTime = document.getElementById('btnUseTime');
+  const startSlider = document.getElementById('startSlider');
+  const endSlider = document.getElementById('endSlider');
+  const sliderRange = document.getElementById('sliderRange');
   const startTimeDisplay = document.getElementById('startTimeDisplay');
   const endTimeDisplay = document.getElementById('endTimeDisplay');
   const timeDiffValue = document.getElementById('timeDiffValue');
-  const timeDiffResult = document.getElementById('timeDiffResult');
+  const btnUseTime = document.getElementById('btnUseTime');
 
   if (!videoUpload || !videoContainer || !videoPlayer) {
     console.log('Video analysis elements not found - skipping video functionality');
     return;
+  }
+
+  let videoDuration = 0;
+
+  // Format time as M:SS.mmm
+  function formatTime(seconds) {
+    if (seconds === null || seconds === undefined || !isFinite(seconds)) return '0:00.000';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toFixed(3).padStart(6, '0')}`;
+  }
+
+  // Update slider range visualization
+  function updateSliderRange() {
+    const startVal = parseFloat(startSlider.value);
+    const endVal = parseFloat(endSlider.value);
+
+    const minVal = Math.min(startVal, endVal);
+    const maxVal = Math.max(startVal, endVal);
+
+    const percentStart = minVal;
+    const percentEnd = maxVal;
+
+    sliderRange.style.left = percentStart + '%';
+    sliderRange.style.width = (percentEnd - percentStart) + '%';
+  }
+
+  // Update time displays
+  function updateTimeDisplays() {
+    const startPercent = parseFloat(startSlider.value) / 100;
+    const endPercent = parseFloat(endSlider.value) / 100;
+
+    startTime = startPercent * videoDuration;
+    endTime = endPercent * videoDuration;
+
+    startTimeDisplay.textContent = formatTime(startTime);
+    endTimeDisplay.textContent = formatTime(endTime);
+
+    const diff = Math.abs(endTime - startTime);
+    timeDiffValue.textContent = diff.toFixed(3) + 's';
+
+    updateSliderRange();
   }
 
   // Handle video file upload
@@ -242,92 +257,73 @@ function initVideoAnalysis() {
     if (file && file.type.startsWith('video/')) {
       const url = URL.createObjectURL(file);
       videoPlayer.src = url;
-      videoContainer.classList.remove('hidden');
 
-      // Reset markers
-      startTime = null;
-      endTime = null;
-      startTimeDisplay.textContent = '--:--';
-      endTimeDisplay.textContent = '--:--';
-      timeDiffResult.classList.add('hidden');
+      videoPlayer.addEventListener('loadedmetadata', () => {
+        videoDuration = videoPlayer.duration;
+        videoContainer.classList.remove('hidden');
 
-      console.log('Video loaded:', file.name);
+        // Initialize sliders
+        startSlider.value = 0;
+        endSlider.value = 100;
+
+        updateTimeDisplays();
+        console.log('Video loaded:', file.name, 'Duration:', videoDuration);
+      });
     }
   });
 
-  // Format time as MM:SS.mmm
-  function formatTime(seconds) {
-    if (seconds === null || seconds === undefined) return '--:--';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toFixed(3).padStart(6, '0')}`;
-  }
+  // Slider event listeners
+  startSlider.addEventListener('input', () => {
+    // Ensure start doesn't go past end
+    if (parseFloat(startSlider.value) > parseFloat(endSlider.value)) {
+      endSlider.value = startSlider.value;
+    }
+    updateTimeDisplays();
 
-  // Set start point
-  btnSetStart.addEventListener('click', () => {
-    if (videoPlayer.src && !videoPlayer.paused) {
-      startTime = videoPlayer.currentTime;
-      startTimeDisplay.textContent = formatTime(startTime);
-      console.log('Start time set:', startTime);
-      updateTimeDifference();
-    } else if (!videoPlayer.src) {
-      alert('Please upload a video first');
-    } else {
-      alert('Please play the video and pause/click when you want to mark the start point');
+    // Seek video to start time
+    if (videoDuration > 0) {
+      videoPlayer.currentTime = startTime;
     }
   });
 
-  // Set end point
-  btnSetEnd.addEventListener('click', () => {
-    if (videoPlayer.src && !videoPlayer.paused) {
-      endTime = videoPlayer.currentTime;
-      endTimeDisplay.textContent = formatTime(endTime);
-      console.log('End time set:', endTime);
-      updateTimeDifference();
-    } else if (!videoPlayer.src) {
-      alert('Please upload a video first');
-    } else {
-      alert('Please play the video and pause/click when you want to mark the end point');
+  endSlider.addEventListener('input', () => {
+    // Ensure end doesn't go before start
+    if (parseFloat(endSlider.value) < parseFloat(startSlider.value)) {
+      startSlider.value = endSlider.value;
+    }
+    updateTimeDisplays();
+
+    // Seek video to end time
+    if (videoDuration > 0) {
+      videoPlayer.currentTime = endTime;
     }
   });
-
-  // Calculate and display time difference
-  function updateTimeDifference() {
-    if (startTime !== null && endTime !== null) {
-      const diff = Math.abs(endTime - startTime);
-      timeDiffValue.textContent = diff.toFixed(3);
-      timeDiffResult.classList.remove('hidden');
-      console.log('Time difference:', diff);
-    }
-  }
 
   // Use calculated time in the main calculator
   btnUseTime.addEventListener('click', () => {
-    if (startTime !== null && endTime !== null) {
-      const diff = Math.abs(endTime - startTime);
-      const timeInput = document.getElementById('inputTime');
-      if (timeInput) {
-        timeInput.value = diff.toFixed(3);
-        // Scroll to calculator section
-        document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' });
-        console.log('Time value transferred to calculator:', diff);
+    const diff = Math.abs(endTime - startTime);
+    const timeInput = document.getElementById('inputTime');
+    if (timeInput && diff > 0) {
+      timeInput.value = diff.toFixed(3);
 
-        // Optional: highlight the time input briefly
-        timeInput.style.background = 'rgba(74,163,255,0.2)';
-        setTimeout(() => {
-          timeInput.style.background = '';
-        }, 1000);
-      }
+      // Highlight the time input briefly with modern animation
+      timeInput.style.transition = 'all 0.3s ease';
+      timeInput.style.borderColor = 'var(--accent)';
+      timeInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+
+      setTimeout(() => {
+        timeInput.style.borderColor = '';
+        timeInput.style.boxShadow = '';
+      }, 1500);
+
+      console.log('Time value transferred to calculator:', diff);
     }
   });
 
-  // Allow setting markers by clicking on the video while it's playing
-  videoPlayer.addEventListener('click', () => {
-    if (!videoPlayer.paused) {
-      // Could add logic here to auto-set start/end based on clicks
-      videoPlayer.pause();
-    }
+  // Update sliders when video time changes (optional sync)
+  videoPlayer.addEventListener('timeupdate', () => {
+    // This could be used to sync sliders with video playback if desired
   });
 
-  console.log('Video analysis initialized');
+  console.log('Video analysis with dual slider initialized');
 }
