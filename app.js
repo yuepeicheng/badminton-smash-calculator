@@ -565,48 +565,61 @@ function initAngleTool() {
 
     const radius = 60;
 
-    // --- Compute base and angle vectors ---
-    const baseDx = baseLineEnd.x - baseLineStart.x;
-    const baseDy = baseLineEnd.y - baseLineStart.y;
+    // Base vector (A → B)
+    const baseVec = {
+      x: baseLineEnd.x - baseLineStart.x,
+      y: baseLineEnd.y - baseLineStart.y,
+    };
 
-    const angleDx = angleLineEnd.x - baseLineEnd.x;
-    const angleDy = angleLineEnd.y - baseLineEnd.y;
+    // Angle vector (B → C)
+    const angleVec = {
+      x: angleLineEnd.x - baseLineEnd.x,
+      y: angleLineEnd.y - baseLineEnd.y,
+    };
 
-    // --- Get direction of both lines in radians ---
-    const baseAngle = Math.atan2(baseDy, baseDx);
-    const targetAngle = Math.atan2(angleDy, angleDx);
+    // Angles from x-axis
+    const baseAngle = Math.atan2(baseVec.y, baseVec.x);
+    const targetAngle = Math.atan2(angleVec.y, angleVec.x);
 
-    // --- Normalize to [0, 2π) for clarity ---
-    let start = (baseAngle + 2 * Math.PI) % (2 * Math.PI);
-    let end = (targetAngle + 2 * Math.PI) % (2 * Math.PI);
+    // Signed angle difference
+    let diff = targetAngle - baseAngle;
 
-    // --- Compute angular difference ---
-    let diff = end - start;
-    if (diff < 0) diff += 2 * Math.PI;
+    // Normalize to (-π, π]
+    if (diff <= -Math.PI) diff += 2 * Math.PI;
+    if (diff > Math.PI) diff -= 2 * Math.PI;
 
-    // --- If reflex (> 180°), flip to the *inside* (acute) angle ---
-    let anticlockwise = false;
-    if (diff > Math.PI) {
-      anticlockwise = true;
-      [start, end] = [end, start]; // swap direction
-    }
+    // If the arc is being drawn outside, reverse the direction
+    const anticlockwise = diff < 0;
 
-    // --- Draw the correct “inside” arc ---
+    // Draw the inside (acute/interior) arc
     ctx.strokeStyle = '#10b981';
     ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
     ctx.lineWidth = 3;
 
     ctx.beginPath();
-    ctx.arc(baseLineEnd.x, baseLineEnd.y, radius, start, end, anticlockwise);
+    ctx.arc(
+      baseLineEnd.x,
+      baseLineEnd.y,
+      radius,
+      baseAngle,
+      targetAngle,
+      anticlockwise
+    );
     ctx.stroke();
 
     ctx.beginPath();
     ctx.moveTo(baseLineEnd.x, baseLineEnd.y);
-    ctx.arc(baseLineEnd.x, baseLineEnd.y, radius, start, end, anticlockwise);
+    ctx.arc(
+      baseLineEnd.x,
+      baseLineEnd.y,
+      radius,
+      baseAngle,
+      targetAngle,
+      anticlockwise
+    );
     ctx.closePath();
     ctx.fill();
-
-
+    
     // Draw control points
     const drawPoint = (point, color, label) => {
       ctx.fillStyle = color;
