@@ -158,6 +158,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // ===== DISTANCE BUTTONS =====
+    const distanceButtons = document.querySelectorAll('.use-distance-btn');
+    distanceButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const distance = btn.getAttribute('data-distance');
+        if (distance && el.distance) {
+          el.distance.value = distance;
+
+          // Highlight the distance input briefly with modern animation
+          el.distance.style.transition = 'all 0.3s ease';
+          el.distance.style.borderColor = 'var(--accent)';
+          el.distance.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+
+          setTimeout(() => {
+            el.distance.style.borderColor = '';
+            el.distance.style.boxShadow = '';
+          }, 1500);
+
+          console.log('Distance value transferred to calculator:', distance);
+        }
+      });
+    });
+
     // initial state
     hideResults();
     hideError();
@@ -336,6 +359,41 @@ function initVideoAnalysis() {
   // Update sliders when video time changes (optional sync)
   videoPlayer.addEventListener('timeupdate', () => {
     // This could be used to sync sliders with video playback if desired
+  });
+
+  // Keyboard frame navigation for time tool (moves sliders frame-by-frame)
+  const frameRate = 30; // Assume 30fps, adjust based on video if needed
+
+  document.addEventListener('keydown', (e) => {
+    // Only work if video is loaded and not hidden
+    if (!videoContainer.classList.contains('hidden') && videoDuration > 0) {
+      const frameTime = 1 / frameRate; // Time per frame in seconds
+      const framePercent = (frameTime / videoDuration) * 100; // Convert to percentage
+
+      // Check which slider is focused
+      const focusedSlider = document.activeElement === startSlider ? startSlider :
+                            document.activeElement === endSlider ? endSlider : null;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (focusedSlider) {
+          focusedSlider.value = Math.max(0, parseFloat(focusedSlider.value) - framePercent);
+          updateTimeDisplays();
+          const isStartSlider = focusedSlider === startSlider;
+          videoPlayer.currentTime = isStartSlider ? startTime : endTime;
+          console.log('Frame left:', focusedSlider.value);
+        }
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (focusedSlider) {
+          focusedSlider.value = Math.min(100, parseFloat(focusedSlider.value) + framePercent);
+          updateTimeDisplays();
+          const isStartSlider = focusedSlider === startSlider;
+          videoPlayer.currentTime = isStartSlider ? startTime : endTime;
+          console.log('Frame right:', focusedSlider.value);
+        }
+      }
+    }
   });
 
   console.log('Video analysis with dual slider initialized');
@@ -596,18 +654,16 @@ function initAngleTool() {
     };
 
     // Angles from x-axis
-    const baseAngle = Math.atan2(baseVec.y, baseVec.x);
     const targetAngle = Math.atan2(angleVec.y, angleVec.x);
 
-    // Signed angle difference
-    let diff = targetAngle - baseAngle;
+    // The arc should go from the BC line back to the BA line (opposite direction of base vector)
+    // This creates a proper angle measurement between the two lines
+    const arcStartAngle = targetAngle;
+    // arcEndAngle points backwards along the base line (BA direction, opposite of AB)
+    const arcEndAngle = Math.atan2(-baseVec.y, -baseVec.x);
 
-    // Normalize to (-π, π]
-    if (diff <= -Math.PI) diff += 2 * Math.PI;
-    if (diff > Math.PI) diff -= 2 * Math.PI;
-
-    // If the arc is being drawn outside, reverse the direction
-    const anticlockwise = diff < 0;
+    // Determine direction: if C is above the AB line, go counter-clockwise; if below, go clockwise
+    const anticlockwise = angleVec.y < 0;
 
     // Draw the inside (acute/interior) arc
     ctx.strokeStyle = '#10b981';
@@ -619,8 +675,8 @@ function initAngleTool() {
       baseLineEnd.x,
       baseLineEnd.y,
       radius,
-      baseAngle,
-      targetAngle,
+      arcStartAngle,
+      arcEndAngle,
       anticlockwise
     );
     ctx.stroke();
@@ -631,8 +687,8 @@ function initAngleTool() {
       baseLineEnd.x,
       baseLineEnd.y,
       radius,
-      baseAngle,
-      targetAngle,
+      arcStartAngle,
+      arcEndAngle,
       anticlockwise
     );
     ctx.closePath();
