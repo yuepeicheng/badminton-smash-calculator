@@ -7,7 +7,7 @@
    - Has keyboard "Enter" binding, reset button, and variable explanations.
 */
 
-const defaultKx = 0.2; // Default drag constant (hidden from user interface)
+const defaultKx = 0.20324632; // Default drag constant (hidden from user interface)
 
 function fmt(n, dp = 3) {
   if (!isFinite(n)) return '—';
@@ -137,12 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset
     el.btnClear.addEventListener('click', () => {
-      el.distance.value = 9.50;
-      el.time.value = 0.5;
-      el.angle.value = 8;
+      el.distance.value = '';
+      el.time.value = '';
+      el.angle.value = '';
       hideError();
       hideResults();
-      console.log('Reset to defaults.');
+      console.log('Fields cleared.');
     });
 
     // Enter key -> calculate
@@ -499,35 +499,53 @@ function initAngleTool() {
       baseLineStart = baseLineEnd;
       baseLineEnd = temp;
 
-      // Recalculate angle line position to maintain angle
-      const currentAngleRad = currentAngle * Math.PI / 180;
-      const baseLength = Math.abs(baseLineEnd.x - baseLineStart.x);
-      const angleLength = 150; // Fixed length for angle line
+      // Flip the angle line position to the opposite side
+      // Calculate the perpendicular to maintain acute angle on the other side
+      const baseVecX = baseLineEnd.x - baseLineStart.x;
+      const baseVecY = baseLineEnd.y - baseLineStart.y;
 
-      if (isFlipped) {
-        angleLineEnd.x = baseLineEnd.x - angleLength * Math.cos(currentAngleRad);
-        angleLineEnd.y = baseLineEnd.y + angleLength * Math.sin(currentAngleRad);
-      } else {
-        angleLineEnd.x = baseLineEnd.x + angleLength * Math.cos(currentAngleRad);
-        angleLineEnd.y = baseLineEnd.y + angleLength * Math.sin(currentAngleRad);
-      }
+      // Current angle line relative to base endpoint
+      const currentVecX = angleLineEnd.x - baseLineEnd.x;
+      const currentVecY = angleLineEnd.y - baseLineEnd.y;
+
+      // Reflect across the base line
+      const dotProduct = (currentVecX * baseVecX + currentVecY * baseVecY);
+      const baseMagSq = baseVecX * baseVecX + baseVecY * baseVecY;
+
+      const projX = (dotProduct / baseMagSq) * baseVecX;
+      const projY = (dotProduct / baseMagSq) * baseVecY;
+
+      angleLineEnd.x = baseLineEnd.x + 2 * projX - currentVecX;
+      angleLineEnd.y = baseLineEnd.y + 2 * projY - currentVecY;
 
       draw();
       console.log('Angle measurement flipped');
     });
   }
 
-  // Calculate angle (always 0-90 degrees, measuring downward from horizontal)
+  // Calculate angle (always 0-90 degrees acute angle between lines A-B and B-C)
   function calculateAngle() {
-    // Angle line vector (from base end point to angle end point)
-    const dx = angleLineEnd.x - baseLineEnd.x;
-    const dy = angleLineEnd.y - baseLineStart.y; // Always measure from horizontal line
+    // Vector from A to B (base line)
+    const baseVecX = baseLineEnd.x - baseLineStart.x;
+    const baseVecY = baseLineEnd.y - baseLineStart.y;
 
-    // Calculate angle from horizontal downward
-    // atan2 gives us the angle, we only care about the magnitude for 0-90
-    const angle = Math.atan2(Math.abs(dy), Math.abs(dx)) * (180 / Math.PI);
+    // Vector from B to C (angle line)
+    const angleVecX = angleLineEnd.x - baseLineEnd.x;
+    const angleVecY = angleLineEnd.y - baseLineEnd.y;
 
-    // Clamp to 0-90 degrees
+    // Calculate angle between the two vectors using dot product
+    const dotProduct = baseVecX * angleVecX + baseVecY * angleVecY;
+    const baseMag = Math.sqrt(baseVecX * baseVecX + baseVecY * baseVecY);
+    const angleMag = Math.sqrt(angleVecX * angleVecX + angleVecY * angleVecY);
+
+    // Calculate angle in radians then convert to degrees
+    let angle = Math.acos(dotProduct / (baseMag * angleMag)) * (180 / Math.PI);
+
+    // Ensure we always return an acute angle (0-90 degrees)
+    if (angle > 90) {
+      angle = 180 - angle;
+    }
+
     return Math.max(0, Math.min(90, angle));
   }
 
@@ -619,7 +637,7 @@ function initAngleTool() {
     );
     ctx.closePath();
     ctx.fill();
-    
+
     // Draw control points
     const drawPoint = (point, color, label) => {
       ctx.fillStyle = color;

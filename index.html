@@ -124,23 +124,48 @@
 
       <!-- Court Dimensions -->
       <div class="court-reference" id="court-dimensions">
-        <h3 class="subsection-title">Court Reference</h3>
-         <p class="section-description">Use court dimensins to estimate the distance your smash travelled.</p>
+        <h3 class="subsection-title">Court Reference (Side View)</h3>
+         <p class="section-description">Use court dimensions to estimate the distance your smash travelled.</p>
         <div class="court-visual-compact">
           <div class="court-diagram-svg">
-            <svg viewBox="0 0 200 400" class="court-svg">
-              <rect x="10" y="10" width="180" height="380" fill="none" stroke="rgba(74,163,255,0.3)" stroke-width="2"/>
-              <line x1="10" y1="200" x2="190" y2="200" stroke="rgba(74,163,255,0.5)" stroke-width="2"/>
-              <line x1="10" y1="90" x2="190" y2="90" stroke="rgba(74,163,255,0.3)" stroke-width="1" stroke-dasharray="4"/>
-              <line x1="10" y1="310" x2="190" y2="310" stroke="rgba(74,163,255,0.3)" stroke-width="1" stroke-dasharray="4"/>
-              <text x="100" y="205" fill="rgba(74,163,255,0.9)" text-anchor="middle" font-size="10" font-weight="600">NET</text>
+            <svg viewBox="0 0 400 150" class="court-svg-side">
+              <!-- Ground line -->
+              <line x1="20" y1="120" x2="380" y2="120" stroke="rgba(74,163,255,0.5)" stroke-width="3"/>
+
+              <!-- Full court length -->
+              <line x1="20" y1="120" x2="380" y2="120" stroke="rgba(74,163,255,0.4)" stroke-width="2"/>
+              <line x1="20" y1="110" x2="20" y2="130" stroke="rgba(74,163,255,0.4)" stroke-width="2"/>
+              <line x1="380" y1="110" x2="380" y2="130" stroke="rgba(74,163,255,0.4)" stroke-width="2"/>
+
+              <!-- Net in center -->
+              <line x1="200" y1="120" x2="200" y2="50" stroke="rgba(74,163,255,0.8)" stroke-width="4"/>
+              <text x="200" y="40" fill="rgba(74,163,255,0.9)" text-anchor="middle" font-size="12" font-weight="600">NET</text>
+
+              <!-- Front court service line (near side) -->
+              <line x1="110" y1="115" x2="110" y2="125" stroke="rgba(16,185,129,0.6)" stroke-width="2" stroke-dasharray="4"/>
+              <circle cx="110" cy="120" r="3" fill="rgba(16,185,129,0.8)"/>
+
+              <!-- Doubles service line (near side) -->
+              <line x1="50" y1="115" x2="50" y2="125" stroke="rgba(245,158,11,0.6)" stroke-width="2" stroke-dasharray="4"/>
+              <circle cx="50" cy="120" r="3" fill="rgba(245,158,11,0.8)"/>
+
+              <!-- Opponent position (far side, halfway) -->
+              <line x1="290" y1="115" x2="290" y2="125" stroke="rgba(239,68,68,0.6)" stroke-width="2" stroke-dasharray="4"/>
+              <circle cx="290" cy="120" r="3" fill="rgba(239,68,68,0.8)"/>
+
+              <!-- Front court service line (far side) -->
+              <line x1="290" y1="115" x2="290" y2="125" stroke="rgba(16,185,129,0.6)" stroke-width="2" stroke-dasharray="4"/>
+
+              <!-- Doubles service line (far side) -->
+              <line x1="350" y1="115" x2="350" y2="125" stroke="rgba(245,158,11,0.6)" stroke-width="2" stroke-dasharray="4"/>
             </svg>
           </div>
           <div class="court-measurements-compact">
-            <div class="measure-item"><span>Full Length:</span><strong>13.40m</strong></div>
-            <div class="measure-item"><span>Width (Doubles):</span><strong>6.10m</strong></div>
-            <div class="measure-item"><span>Service to Net:</span><strong>1.98m</strong></div>
-            <div class="measure-item"><span>Service to Back:</span><strong>4.72m</strong></div>
+            <div class="measure-item"><span>Full court length:</span><strong>13.40m</strong></div>
+            <div class="measure-item"><span>Doubles service line to net:</span><strong>1.98m</strong></div>
+            <div class="measure-item"><span>Front court service line to net:</span><strong>1.98m</strong></div>
+            <div class="measure-item"><span>Net to front court service line (opponent side):</span><strong>1.98m</strong></div>
+            <div class="measure-item"><span>Doubles service line to opponent position (halfway):</span><strong>6.70m</strong></div>
           </div>
         </div>
       </div>
@@ -217,7 +242,7 @@
               <span class="label-text">Distance <em>x(t)</em></span>
               <span class="label-unit">meters</span>
             </label>
-            <input id="inputDistance" type="number" step="0.01" value="9.50" class="calc-input" />
+            <input id="inputDistance" type="number" step="0.01" class="calc-input" placeholder="e.g. 9.50" />
             <div class="input-help">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -233,7 +258,7 @@
               <span class="label-text">Time <em>t</em></span>
               <span class="label-unit">seconds</span>
             </label>
-            <input id="inputTime" type="number" step="0.001" value="0.5" class="calc-input" />
+            <input id="inputTime" type="number" step="0.001" class="calc-input" placeholder="e.g. 0.500" />
             <div class="input-help">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -249,7 +274,7 @@
               <span class="label-text">Angle <em>θ</em></span>
               <span class="label-unit">degrees</span>
             </label>
-            <input id="inputAngle" type="number" step="0.1" value="8" class="calc-input" />
+            <input id="inputAngle" type="number" step="0.1" class="calc-input" placeholder="e.g. 8.0" />
             <div class="input-help">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>

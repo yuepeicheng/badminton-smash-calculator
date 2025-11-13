@@ -697,6 +697,14 @@ body {
   margin: 0 auto;
 }
 
+.court-svg-side {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
 .court-measurements-compact {
   display: grid;
   gap: 0.625rem;
@@ -770,6 +778,17 @@ body {
   color: var(--text-primary);
   font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
   transition: all 0.2s ease;
+}
+
+/* Remove spinner arrows from number inputs */
+.calc-input::-webkit-outer-spin-button,
+.calc-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.calc-input[type=number] {
+  -moz-appearance: textfield;
 }
 
 .calc-input:focus {
