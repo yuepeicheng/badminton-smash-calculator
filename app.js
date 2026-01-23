@@ -342,7 +342,7 @@ function initVideoAnalysis() {
     if (timeInput && diff > 0) {
       timeInput.value = diff.toFixed(3);
 
-      // Highlight the time input briefly with modern animation
+      // Highlight the time input briefly
       timeInput.style.transition = 'all 0.3s ease';
       timeInput.style.borderColor = 'var(--accent)';
       timeInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
