@@ -1,13 +1,4 @@
-/* app.js — Non-video defensive version (no canvas/video references)
-   Replace your existing app.js with this file.
-   This version:
-   - Does NOT reference overlay/video or call getContext().
-   - Validates DOM elements and reports clear errors.
-   - Implements the formula: v0 = (e^(k_x * x) - 1) / (k_x * t * cos(theta))
-   - Has keyboard "Enter" binding, reset button, and variable explanations.
-*/
-
-const defaultKx = 0.20324632; // Default drag constant (hidden from user interface)
+const defaultKx = 0.20324632; // Default drag constant
 
 function fmt(n, dp = 3) {
   if (!isFinite(n)) return '—';
