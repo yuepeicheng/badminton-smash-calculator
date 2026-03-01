@@ -1,12 +1,23 @@
-# badminton-smash-calculator
-A browser-based tool to estimate badminton smash speed without fancy equipment.  All computation runs locally in the browser—no uploads.
+# 🏸 Badminton Smash Calculator
 
-**Method summary**
-- Calibrate distance by clicking two court points with known real-world separation (e.g., singles width 5.18 m).
-- Mark shuttle positions at times t1 and t2 (paused frames). The app measures pixel distance Δpx and time Δt from the video.
-- Speed v = (Δpx × metersPerPixel) / Δt. Optional skew correction v' = v / cos(θ).
+An interactive web tool that translates advanced physics research into accessible, real-time training insights for badminton players.
 
-**Accuracy tips**
-- Use a long calibration baseline (full width/length).
-- Perpendicular camera angle, high frame rate, sharp frames.
-- Repeat measurements and average.
+## What it does
+
+Upload a video of your smash, and the calculator uses projectile motion equations and calculus-based physics modeling to measure your smash velocity and suggest personalized training improvements. Designed to be as intuitive as it is technically rigorous.
+
+## Features
+
+- 📹 **Video upload & frame-by-frame analysis** — step through footage to precisely mark your smash
+- ⚡ **Real-time physics calculations** — velocity computed instantly using projectile motion models
+- 📊 **Data visualization** — graphs that make smash mechanics easy to read at a glance
+- 🎯 **Training suggestions** — personalized feedback based on your results
+- 🖥️ **Clean, accessible UI** — iterated through 8+ design versions based on user testing
+
+## Built with
+
+HTML · CSS · JavaScript
+
+## Why
+
+I wrote a physics research paper modeling the badminton smash — and when I showed it to my teammates, they just stared blankly. *"I don't really understand, but it's cool though."* That response pushed me to rebuild it as something anyone could actually use. This project became my first real lesson in the gap between technical correctness and genuine accessibility.
