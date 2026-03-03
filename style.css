@@ -1137,6 +1137,246 @@ body {
   }
 }
 
+/* ===== LOGIN SECTION ===== */
+.login-section {
+  max-width: 400px;
+  margin: 1rem auto;
+  padding: 0 2rem;
+}
+
+.login-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.login-card h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.login-buttons .btn-primary,
+.login-buttons .btn-secondary {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.auth-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: var(--error);
+  font-size: 0.875rem;
+}
+
+/* ===== USER INFO BAR ===== */
+.user-info {
+  max-width: 1400px;
+  margin: 0.75rem auto;
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.user-info strong {
+  color: var(--accent-light);
+}
+
+.btn-logout {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+  background: var(--surface);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* ===== SAVE RESULT BUTTON ===== */
+.btn-save-result {
+  width: 100%;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-save-result:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.btn-save-result:active {
+  transform: translateY(0);
+}
+
+/* ===== DASHBOARD PAGE ===== */
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 60vh;
+}
+
+.dashboard-login-prompt {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-muted);
+}
+
+.dashboard-login-prompt h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.dashboard-login-prompt a {
+  color: var(--accent-light);
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl);
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.card-description {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+}
+
+.no-data-message {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 2rem;
+}
+
+/* ===== LEADERBOARD TABLE ===== */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table thead th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+  background: var(--surface);
+}
+
+.leaderboard-table tbody td {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+}
+
+.rank-cell {
+  font-weight: 700;
+  color: var(--accent-light) !important;
+  width: 60px;
+}
+
+.speed-cell {
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--text-primary) !important;
+}
+
+.current-user-row {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.current-user-row td {
+  color: var(--accent-light) !important;
+  font-weight: 600;
+}
+
 /* ===== SMOOTH SCROLLING ===== */
 html {
   scroll-behavior: smooth;

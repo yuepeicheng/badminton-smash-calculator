@@ -28,9 +28,33 @@
       <nav class="nav">
         <a href="index.html" class="nav-link active">Calculator</a>
         <a href="methodology.html" class="nav-link">Methodology</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="#" class="nav-link" id="navLogin" onclick="document.getElementById('loginSection').classList.toggle('hidden'); return false;">Login</a>
       </nav>
     </div>
   </header>
+
+  <!-- Login/Register Section -->
+  <div id="loginSection" class="login-section hidden">
+    <div class="login-card">
+      <h3>Login or Register</h3>
+      <div class="login-form">
+        <input type="text" id="authUsername" class="calc-input" placeholder="Username" />
+        <input type="password" id="authPassword" class="calc-input" placeholder="Password" />
+        <div id="authError" class="auth-error hidden"></div>
+        <div class="login-buttons">
+          <button class="btn-primary" onclick="loginUser()">Login</button>
+          <button class="btn-secondary" onclick="registerUser()">Register</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logged-in user info -->
+  <div id="userInfo" class="user-info hidden">
+    <span>Logged in as <strong id="loggedInName"></strong></span>
+    <button class="btn-logout" onclick="logoutUser()">Logout</button>
+  </div>
 
   <!-- Tutorial Section -->
   <section class="tutorial-section">
@@ -351,6 +375,9 @@
             </div>
           </div>
           <div class="result-notes" id="outNotes"></div>
+          <button id="btnSaveResult" class="btn-save-result hidden" onclick="saveSmashResult(parseFloat(document.getElementById('outMps').textContent))">
+            Save Result
+          </button>
         </div>
       </div>
     </section>
@@ -362,6 +389,7 @@
     </div>
   </footer>
 
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

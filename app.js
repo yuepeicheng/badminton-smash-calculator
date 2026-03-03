@@ -119,6 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         showResults();
+
+        // Show save button if user is logged in
+        const sessionId = localStorage.getItem('sessionId');
+        const saveBtn = document.getElementById('btnSaveResult');
+        if (sessionId && saveBtn) {
+          saveBtn.classList.remove('hidden');
+          // Store the speed for the save button
+          saveBtn.setAttribute('data-speed', v0);
+          saveBtn.onclick = () => saveSmashResult(v0);
+        }
       } catch (err) {
         console.error('Unexpected error in calc handler:', err);
         showError('Unexpected error — see console for details.');
