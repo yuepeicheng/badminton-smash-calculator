@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Badminton Smash Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="branding">
+        <h1>Badminton Smash Calculator</h1>
+        <p class="subtitle">Precise smash speed analysis using physics-based modeling</p>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Calculator</a>
+        <a href="methodology.html" class="nav-link">Methodology</a>
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- Not logged in message -->
+    <div id="dashboardLogin" class="dashboard-login-prompt">
+      <h2>Log in to view your dashboard</h2>
+      <p>Go to the <a href="index.html">Calculator</a> page to log in or register, then come back here.</p>
+    </div>
+
+    <!-- Dashboard content (hidden until logged in) -->
+    <div id="dashboardContent" class="hidden">
+      <div class="dashboard-header">
+        <h2>Your Dashboard</h2>
+        <p class="section-description">Track your smash speed progress and see how you rank globally</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Progression Chart -->
+        <section class="dashboard-card">
+          <h3 class="card-title">Speed Progression</h3>
+          <p class="card-description">Your smash speed over time</p>
+          <div class="chart-container">
+            <canvas id="progressionChart"></canvas>
+          </div>
+          <p id="noDataMsg" class="no-data-message hidden">
+            No smash records yet. Use the Calculator to measure and save your smash speeds.
+          </p>
+        </section>
+
+        <!-- Leaderboard -->
+        <section class="dashboard-card">
+          <h3 class="card-title">Global Leaderboard</h3>
+          <p class="card-description">Top smash speeds from all users</p>
+          <div id="leaderboardContainer">
+            <table class="leaderboard-table" id="leaderboardTable">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Best Speed</th>
+                  <th>Smashes</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+            <p id="emptyLeaderboard" class="no-data-message hidden">
+              No entries yet. Be the first to save a smash record!
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Peicheng Yue — Badminton Smash Calculator Project</p>
+    </div>
+  </footer>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
