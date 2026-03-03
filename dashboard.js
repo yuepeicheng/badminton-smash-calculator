@@ -1,7 +1,5 @@
 // ===== DASHBOARD MODULE =====
-// Handles progression chart and global leaderboard display.
-
-const API_BASE = 'http://localhost:8080/api';
+// All data read from localStorage — no backend required.
 
 let progressionChart = null;
 
@@ -12,63 +10,42 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Initialize the dashboard: check login state and load data.
  */
-async function initDashboard() {
-  const sessionId = localStorage.getItem('sessionId');
+function initDashboard() {
+  const username = localStorage.getItem('username');
 
-  if (!sessionId) {
-    // Not logged in — show login prompt
+  if (!username) {
     document.getElementById('dashboardLogin').classList.remove('hidden');
     document.getElementById('dashboardContent').classList.add('hidden');
     return;
   }
 
-  try {
-    // Check if session is valid
-    const res = await fetch(`${API_BASE}/auth/me`, {
-      headers: { 'X-Session-Id': sessionId }
-    });
-    const data = await res.json();
+  document.getElementById('dashboardLogin').classList.add('hidden');
+  document.getElementById('dashboardContent').classList.remove('hidden');
 
-    if (!data.success) {
-      document.getElementById('dashboardLogin').classList.remove('hidden');
-      document.getElementById('dashboardContent').classList.add('hidden');
-      return;
-    }
-
-    // Session valid — show dashboard
-    document.getElementById('dashboardLogin').classList.add('hidden');
-    document.getElementById('dashboardContent').classList.remove('hidden');
-
-    // Load data in parallel
-    loadProgression(sessionId);
-    loadLeaderboard(data.username);
-  } catch (err) {
-    console.log('Backend not running — dashboard disabled');
-    document.getElementById('dashboardLogin').innerHTML =
-      '<h2>Cannot connect to server</h2><p>Make sure the backend is running: <code>cd backend && mvn spring-boot:run</code></p>';
-  }
+  loadProgression(username);
+  loadLeaderboard(username);
 }
 
 /**
- * Load and render the progression chart.
+ * Load and render the progression chart from localStorage.
  */
-async function loadProgression(sessionId) {
-  try {
-    const res = await fetch(`${API_BASE}/records/progression`, {
-      headers: { 'X-Session-Id': sessionId }
-    });
-    const data = await res.json();
+function loadProgression(username) {
+  const key = 'smashRecords_' + username;
+  const records = JSON.parse(localStorage.getItem(key) || '[]');
 
-    if (!Array.isArray(data) || data.length === 0) {
-      document.getElementById('noDataMsg').classList.remove('hidden');
-      return;
-    }
-
-    document.getElementById('noDataMsg').classList.add('hidden');
-    renderChart(data);
-  } catch (err) {
-    console.error('Failed to load progression:', err);
+  if (records.length === 0) {
+    document.getElementById('noDataMsg').classList.remove('hidden');
+    return;
   }
+
+  document.getElementById('noDataMsg').classList.add('hidden');
+
+  const chartData = records.map(r => ({
+    date: r.recordedAt,
+    speedKmh: r.speedMps * 3.6
+  }));
+
+  renderChart(chartData);
 }
 
 /**
@@ -77,14 +54,12 @@ async function loadProgression(sessionId) {
 function renderChart(records) {
   const ctx = document.getElementById('progressionChart').getContext('2d');
 
-  // Format dates for display
   const labels = records.map(r => {
     const d = new Date(r.date);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   });
   const speeds = records.map(r => Math.round(r.speedKmh * 100) / 100);
 
-  // Destroy existing chart if re-rendering
   if (progressionChart) {
     progressionChart.destroy();
   }
@@ -92,7 +67,7 @@ function renderChart(records) {
   progressionChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         label: 'Smash Speed (km/h)',
         data: speeds,
@@ -111,10 +86,7 @@ function renderChart(records) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: {
-            color: '#cbd5e1',
-            font: { family: 'Inter' }
-          }
+          labels: { color: '#cbd5e1', font: { family: 'Inter' } }
         }
       },
       scales: {
@@ -125,11 +97,7 @@ function renderChart(records) {
         y: {
           ticks: { color: '#94a3b8' },
           grid: { color: 'rgba(51, 65, 85, 0.5)' },
-          title: {
-            display: true,
-            text: 'Speed (km/h)',
-            color: '#94a3b8'
-          }
+          title: { display: true, text: 'Speed (km/h)', color: '#94a3b8' }
         }
       }
     }
@@ -137,43 +105,52 @@ function renderChart(records) {
 }
 
 /**
- * Load and render the global leaderboard.
+ * Build and render the leaderboard from all users' localStorage data.
+ * Note: only users on the same device/browser are visible in the leaderboard.
  */
-async function loadLeaderboard(currentUsername) {
-  try {
-    const res = await fetch(`${API_BASE}/leaderboard`);
-    const data = await res.json();
+function loadLeaderboard(currentUsername) {
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  const entries = [];
 
-    if (!Array.isArray(data) || data.length === 0) {
-      document.getElementById('leaderboardTable').classList.add('hidden');
-      document.getElementById('emptyLeaderboard').classList.remove('hidden');
-      return;
-    }
+  for (const username of Object.keys(users)) {
+    const key = 'smashRecords_' + username;
+    const records = JSON.parse(localStorage.getItem(key) || '[]');
+    if (records.length === 0) continue;
 
-    document.getElementById('leaderboardTable').classList.remove('hidden');
-    document.getElementById('emptyLeaderboard').classList.add('hidden');
-
-    const tbody = document.getElementById('leaderboardBody');
-    tbody.innerHTML = '';
-
-    for (const entry of data) {
-      const row = document.createElement('tr');
-      const isCurrentUser = entry.username === currentUsername;
-
-      if (isCurrentUser) {
-        row.classList.add('current-user-row');
-      }
-
-      row.innerHTML = `
-        <td class="rank-cell">${entry.rank}</td>
-        <td class="player-cell">${entry.username}${isCurrentUser ? ' (you)' : ''}</td>
-        <td class="speed-cell">${entry.bestSpeedKmh} km/h</td>
-        <td class="smashes-cell">${entry.totalSmashes}</td>
-      `;
-
-      tbody.appendChild(row);
-    }
-  } catch (err) {
-    console.error('Failed to load leaderboard:', err);
+    const bestSpeedMps = Math.max(...records.map(r => r.speedMps));
+    entries.push({
+      username,
+      bestSpeedKmh: Math.round(bestSpeedMps * 3.6 * 10) / 10,
+      totalSmashes: records.length
+    });
   }
+
+  // Sort descending by best speed
+  entries.sort((a, b) => b.bestSpeedKmh - a.bestSpeedKmh);
+
+  if (entries.length === 0) {
+    document.getElementById('leaderboardTable').classList.add('hidden');
+    document.getElementById('emptyLeaderboard').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('leaderboardTable').classList.remove('hidden');
+  document.getElementById('emptyLeaderboard').classList.add('hidden');
+
+  const tbody = document.getElementById('leaderboardBody');
+  tbody.innerHTML = '';
+
+  entries.forEach((entry, i) => {
+    const row = document.createElement('tr');
+    const isCurrentUser = entry.username === currentUsername;
+    if (isCurrentUser) row.classList.add('current-user-row');
+
+    row.innerHTML = `
+      <td class="rank-cell">${i + 1}</td>
+      <td class="player-cell">${entry.username}${isCurrentUser ? ' (you)' : ''}</td>
+      <td class="speed-cell">${entry.bestSpeedKmh} km/h</td>
+      <td class="smashes-cell">${entry.totalSmashes}</td>
+    `;
+    tbody.appendChild(row);
+  });
 }

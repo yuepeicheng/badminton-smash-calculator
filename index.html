@@ -29,14 +29,15 @@
         <a href="index.html" class="nav-link active">Calculator</a>
         <a href="methodology.html" class="nav-link">Methodology</a>
         <a href="dashboard.html" class="nav-link">Dashboard</a>
-        <a href="#" class="nav-link" id="navLogin" onclick="document.getElementById('loginSection').classList.toggle('hidden'); return false;">Login</a>
+        <a href="#" class="nav-link" id="navLogin" onclick="openLoginModal(); return false;">Login</a>
       </nav>
     </div>
   </header>
 
-  <!-- Login/Register Section -->
-  <div id="loginSection" class="login-section hidden">
-    <div class="login-card">
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal-overlay hidden" onclick="if(event.target===this) closeLoginModal()">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
       <h3>Login or Register</h3>
       <div class="login-form">
         <input type="text" id="authUsername" class="calc-input" placeholder="Username" />
@@ -48,12 +49,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Logged-in user info -->
-  <div id="userInfo" class="user-info hidden">
-    <span>Logged in as <strong id="loggedInName"></strong></span>
-    <button class="btn-logout" onclick="logoutUser()">Logout</button>
   </div>
 
   <!-- Tutorial Section -->

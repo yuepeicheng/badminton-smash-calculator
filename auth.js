@@ -1,7 +1,5 @@
 // ===== AUTHENTICATION MODULE =====
-// Handles login, register, logout, and session management.
-
-const API_BASE = 'http://localhost:8080/api';
+// All data stored in localStorage — no backend required.
 
 // Check if user is logged in on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,71 +9,50 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Check if there's an active session and update the UI.
  */
-async function checkSession() {
-  const sessionId = localStorage.getItem('sessionId');
-  if (!sessionId) {
-    updateAuthUI(null);
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/auth/me`, {
-      headers: { 'X-Session-Id': sessionId }
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      updateAuthUI(data);
-    } else {
-      // Session expired or invalid
-      localStorage.removeItem('sessionId');
-      localStorage.removeItem('username');
-      updateAuthUI(null);
-    }
-  } catch (err) {
-    console.log('Backend not running — auth features disabled');
+function checkSession() {
+  const username = localStorage.getItem('username');
+  if (username) {
+    updateAuthUI({ username });
+  } else {
     updateAuthUI(null);
   }
 }
 
 /**
- * Register a new user.
+ * Register a new user (stores hashed-ish credentials in localStorage).
  */
-async function registerUser() {
+function registerUser() {
   const username = document.getElementById('authUsername').value.trim();
   const password = document.getElementById('authPassword').value;
-  const displayName = username; // Keep it simple
 
   if (!username || !password) {
     showAuthError('Please enter both username and password');
     return;
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, displayName })
-    });
-    const data = await res.json();
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
 
-    if (data.success) {
-      localStorage.setItem('sessionId', data.sessionId);
-      localStorage.setItem('username', data.username);
-      hideAuthError();
-      updateAuthUI({ username: data.username });
-    } else {
-      showAuthError(data.error || 'Registration failed');
-    }
-  } catch (err) {
-    showAuthError('Cannot connect to server. Is the backend running?');
+  if (users[username]) {
+    showAuthError('Username already taken');
+    return;
   }
+
+  // Simple hash: btoa for basic obfuscation (not cryptographically secure,
+  // but fine for a client-side-only app with no sensitive data).
+  const passwordKey = btoa(username + ':' + password);
+  users[username] = { passwordKey };
+  localStorage.setItem('users', JSON.stringify(users));
+  localStorage.setItem('username', username);
+
+  hideAuthError();
+  closeLoginModal();
+  updateAuthUI({ username });
 }
 
 /**
  * Login with username and password.
  */
-async function loginUser() {
+function loginUser() {
   const username = document.getElementById('authUsername').value.trim();
   const password = document.getElementById('authPassword').value;
 
@@ -84,71 +61,72 @@ async function loginUser() {
     return;
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  const user = users[username];
 
-    if (data.success) {
-      localStorage.setItem('sessionId', data.sessionId);
-      localStorage.setItem('username', data.username);
-      hideAuthError();
-      updateAuthUI({ username: data.username, displayName: data.displayName });
-    } else {
-      showAuthError(data.error || 'Login failed');
-    }
-  } catch (err) {
-    showAuthError('Cannot connect to server. Is the backend running?');
+  if (!user || user.passwordKey !== btoa(username + ':' + password)) {
+    showAuthError('Invalid username or password');
+    return;
   }
+
+  localStorage.setItem('username', username);
+  hideAuthError();
+  closeLoginModal();
+  updateAuthUI({ username });
 }
 
 /**
  * Logout the current user.
  */
-async function logoutUser() {
-  const sessionId = localStorage.getItem('sessionId');
-
-  try {
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: 'POST',
-      headers: { 'X-Session-Id': sessionId }
-    });
-  } catch (err) {
-    // Logout locally even if server call fails
-  }
-
-  localStorage.removeItem('sessionId');
+function logoutUser() {
   localStorage.removeItem('username');
   updateAuthUI(null);
+}
+
+/**
+ * Open the login modal.
+ */
+function openLoginModal() {
+  const modal = document.getElementById('loginModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+/**
+ * Close the login modal.
+ */
+function closeLoginModal() {
+  const modal = document.getElementById('loginModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
 /**
  * Update the UI based on login state.
  */
 function updateAuthUI(userData) {
-  const loginSection = document.getElementById('loginSection');
-  const userInfo = document.getElementById('userInfo');
   const navLogin = document.getElementById('navLogin');
   const saveBtn = document.getElementById('btnSaveResult');
 
   if (userData) {
-    // User is logged in
-    if (loginSection) loginSection.classList.add('hidden');
-    if (userInfo) {
-      userInfo.classList.remove('hidden');
-      const nameSpan = document.getElementById('loggedInName');
-      if (nameSpan) nameSpan.textContent = userData.username || userData.displayName;
+    if (navLogin) {
+      navLogin.textContent = userData.username;
+      navLogin.onclick = logoutUser;
+      navLogin.title = 'Click to logout';
     }
-    if (navLogin) navLogin.textContent = userData.username;
     if (saveBtn) saveBtn.classList.remove('hidden');
   } else {
-    // User is not logged in
-    if (loginSection) loginSection.classList.remove('hidden');
-    if (userInfo) userInfo.classList.add('hidden');
-    if (navLogin) navLogin.textContent = 'Login';
+    if (navLogin) {
+      navLogin.textContent = 'Login';
+      navLogin.onclick = openLoginModal;
+      navLogin.title = '';
+    }
     if (saveBtn) saveBtn.classList.add('hidden');
   }
 }
@@ -176,43 +154,28 @@ function hideAuthError() {
 }
 
 /**
- * Save the current calculation result to the backend.
- * Called from app.js after a successful calculation.
+ * Save the current calculation result to localStorage.
  */
-async function saveSmashResult(speedMps) {
-  const sessionId = localStorage.getItem('sessionId');
-  if (!sessionId) {
-    alert('Please log in to save results');
+function saveSmashResult(speedMps) {
+  const username = localStorage.getItem('username');
+  if (!username) {
+    openLoginModal();
     return;
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/records`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Session-Id': sessionId
-      },
-      body: JSON.stringify({ speedMps })
-    });
-    const data = await res.json();
+  const key = 'smashRecords_' + username;
+  const records = JSON.parse(localStorage.getItem(key) || '[]');
+  records.push({ speedMps, recordedAt: new Date().toISOString() });
+  localStorage.setItem(key, JSON.stringify(records));
 
-    if (data.success) {
-      // Show brief success feedback
-      const saveBtn = document.getElementById('btnSaveResult');
-      if (saveBtn) {
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = 'Saved!';
-        saveBtn.style.background = 'var(--success)';
-        setTimeout(() => {
-          saveBtn.textContent = originalText;
-          saveBtn.style.background = '';
-        }, 2000);
-      }
-    } else {
-      alert('Failed to save: ' + (data.error || 'Unknown error'));
-    }
-  } catch (err) {
-    alert('Cannot connect to server. Is the backend running?');
+  const saveBtn = document.getElementById('btnSaveResult');
+  if (saveBtn) {
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saved!';
+    saveBtn.style.background = 'var(--success)';
+    setTimeout(() => {
+      saveBtn.textContent = originalText;
+      saveBtn.style.background = '';
+    }, 2000);
   }
 }
