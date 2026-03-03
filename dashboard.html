@@ -94,17 +94,15 @@
   <div id="loginModal" class="modal-overlay hidden" onclick="if(event.target===this) closeLoginModal()">
     <div class="modal-card">
       <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
-      <div class="modal-tabs">
-        <button class="modal-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
-        <button class="modal-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
-      </div>
+      <h3 id="modalTitle">Login</h3>
       <div class="login-form">
         <input type="text" id="authUsername" class="calc-input" placeholder="Username" autocomplete="username" />
         <input type="password" id="authPassword" class="calc-input" placeholder="Password" autocomplete="current-password" />
         <div id="authError" class="auth-error hidden"></div>
         <button class="btn-primary btn-modal-submit" id="modalSubmitBtn" onclick="submitAuthForm()">Login</button>
         <p class="modal-switch-text">
-          Don't have an account? <a href="#" onclick="switchTab('register'); return false;">Register here</a>
+          <span id="modalSwitchMsg">Don't have an account?</span>
+          <a href="#" id="modalSwitchLink" onclick="toggleAuthMode(); return false;">Register</a>
         </p>
       </div>
     </div>

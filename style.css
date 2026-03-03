@@ -1196,34 +1196,11 @@ body {
   box-shadow: var(--shadow-xl), 0 0 40px rgba(0,0,0,0.5);
 }
 
-.modal-tabs {
-  display: flex;
-  gap: 0;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--border);
-}
-
-.modal-tab {
-  flex: 1;
-  background: transparent;
-  border: none;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-}
-
-.modal-tab:hover {
+.modal-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-primary);
-}
-
-.modal-tab.active {
-  color: var(--accent-light);
-  border-bottom-color: var(--accent);
+  margin-bottom: 1.25rem;
 }
 
 .btn-modal-submit {

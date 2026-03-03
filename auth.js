@@ -3,26 +3,15 @@
 
 let authMode = 'login'; // 'login' or 'register'
 
-// Check if user is logged in on page load
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
 });
 
-/**
- * Check if there's an active session and update the UI.
- */
 function checkSession() {
   const username = localStorage.getItem('username');
-  if (username) {
-    updateAuthUI({ username });
-  } else {
-    updateAuthUI(null);
-  }
+  updateAuthUI(username ? { username } : null);
 }
 
-/**
- * Register a new user (stores hashed-ish credentials in localStorage).
- */
 function registerUser() {
   const username = document.getElementById('authUsername').value.trim();
   const password = document.getElementById('authPassword').value;
@@ -39,21 +28,14 @@ function registerUser() {
     return;
   }
 
-  // Simple hash: btoa for basic obfuscation (not cryptographically secure,
-  // but fine for a client-side-only app with no sensitive data).
-  const passwordKey = btoa(username + ':' + password);
-  users[username] = { passwordKey };
+  users[username] = { passwordKey: btoa(username + ':' + password) };
   localStorage.setItem('users', JSON.stringify(users));
   localStorage.setItem('username', username);
 
-  hideAuthError();
   closeLoginModal();
   updateAuthUI({ username });
 }
 
-/**
- * Login with username and password.
- */
 function loginUser() {
   const username = document.getElementById('authUsername').value.trim();
   const password = document.getElementById('authPassword').value;
@@ -72,73 +54,58 @@ function loginUser() {
   }
 
   localStorage.setItem('username', username);
-  hideAuthError();
   closeLoginModal();
   updateAuthUI({ username });
 }
 
-/**
- * Logout the current user.
- */
 function logoutUser() {
   localStorage.removeItem('username');
   updateAuthUI(null);
 }
 
-/**
- * Open the login modal, optionally on a specific tab.
- */
-function openLoginModal(tab) {
+function openLoginModal() {
   const modal = document.getElementById('loginModal');
-  if (modal) {
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    switchTab(tab || 'login');
-    hideAuthError();
-    document.getElementById('authUsername').value = '';
-    document.getElementById('authPassword').value = '';
-  }
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setAuthMode('login');
+  document.getElementById('authUsername').value = '';
+  document.getElementById('authPassword').value = '';
+  hideAuthError();
 }
 
-/**
- * Close the login modal.
- */
 function closeLoginModal() {
   const modal = document.getElementById('loginModal');
-  if (modal) {
-    modal.classList.add('hidden');
-    document.body.style.overflow = '';
-  }
+  if (!modal) return;
+  modal.classList.add('hidden');
+  document.body.style.overflow = '';
 }
 
-/**
- * Switch between Login and Register tabs.
- */
-function switchTab(tab) {
-  authMode = tab;
-  const tabLogin = document.getElementById('tabLogin');
-  const tabRegister = document.getElementById('tabRegister');
+function setAuthMode(mode) {
+  authMode = mode;
+  const title = document.getElementById('modalTitle');
   const submitBtn = document.getElementById('modalSubmitBtn');
-  const switchText = document.querySelector('.modal-switch-text');
+  const switchLink = document.getElementById('modalSwitchLink');
+  const switchMsg = document.getElementById('modalSwitchMsg');
 
-  hideAuthError();
-
-  if (tab === 'register') {
-    tabLogin.classList.remove('active');
-    tabRegister.classList.add('active');
+  if (mode === 'register') {
+    if (title) title.textContent = 'Create Account';
     if (submitBtn) submitBtn.textContent = 'Create Account';
-    if (switchText) switchText.innerHTML = 'Already have an account? <a href="#" onclick="switchTab(\'login\'); return false;">Login here</a>';
+    if (switchMsg) switchMsg.textContent = 'Already have an account?';
+    if (switchLink) switchLink.textContent = 'Login';
   } else {
-    tabLogin.classList.add('active');
-    tabRegister.classList.remove('active');
+    if (title) title.textContent = 'Login';
     if (submitBtn) submitBtn.textContent = 'Login';
-    if (switchText) switchText.innerHTML = 'Don\'t have an account? <a href="#" onclick="switchTab(\'register\'); return false;">Register here</a>';
+    if (switchMsg) switchMsg.textContent = "Don't have an account?";
+    if (switchLink) switchLink.textContent = 'Register';
   }
+  hideAuthError();
 }
 
-/**
- * Submit the auth form based on current tab mode.
- */
+function toggleAuthMode() {
+  setAuthMode(authMode === 'login' ? 'register' : 'login');
+}
+
 function submitAuthForm() {
   if (authMode === 'register') {
     registerUser();
@@ -147,9 +114,6 @@ function submitAuthForm() {
   }
 }
 
-/**
- * Update the UI based on login state.
- */
 function updateAuthUI(userData) {
   const navLogin = document.getElementById('navLogin');
   const navUserInfo = document.getElementById('navUserInfo');
@@ -168,37 +132,19 @@ function updateAuthUI(userData) {
   }
 }
 
-/**
- * Show an auth error message.
- */
 function showAuthError(msg) {
-  const errorEl = document.getElementById('authError');
-  if (errorEl) {
-    errorEl.textContent = msg;
-    errorEl.classList.remove('hidden');
-  }
+  const el = document.getElementById('authError');
+  if (el) { el.textContent = msg; el.classList.remove('hidden'); }
 }
 
-/**
- * Hide the auth error message.
- */
 function hideAuthError() {
-  const errorEl = document.getElementById('authError');
-  if (errorEl) {
-    errorEl.textContent = '';
-    errorEl.classList.add('hidden');
-  }
+  const el = document.getElementById('authError');
+  if (el) { el.textContent = ''; el.classList.add('hidden'); }
 }
 
-/**
- * Save the current calculation result to localStorage.
- */
 function saveSmashResult(speedMps) {
   const username = localStorage.getItem('username');
-  if (!username) {
-    openLoginModal();
-    return;
-  }
+  if (!username) { openLoginModal(); return; }
 
   const key = 'smashRecords_' + username;
   const records = JSON.parse(localStorage.getItem(key) || '[]');
@@ -207,12 +153,9 @@ function saveSmashResult(speedMps) {
 
   const saveBtn = document.getElementById('btnSaveResult');
   if (saveBtn) {
-    const originalText = saveBtn.textContent;
+    const orig = saveBtn.textContent;
     saveBtn.textContent = 'Saved!';
     saveBtn.style.background = 'var(--success)';
-    setTimeout(() => {
-      saveBtn.textContent = originalText;
-      saveBtn.style.background = '';
-    }, 2000);
+    setTimeout(() => { saveBtn.textContent = orig; saveBtn.style.background = ''; }, 2000);
   }
 }
