@@ -1,6 +1,8 @@
 // ===== AUTHENTICATION MODULE =====
 // All data stored in localStorage — no backend required.
 
+let authMode = 'login'; // 'login' or 'register'
+
 // Check if user is logged in on page load
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
@@ -84,14 +86,17 @@ function logoutUser() {
 }
 
 /**
- * Open the login modal.
+ * Open the login modal, optionally on a specific tab.
  */
-function openLoginModal() {
+function openLoginModal(tab) {
   const modal = document.getElementById('loginModal');
   if (modal) {
     modal.classList.remove('hidden');
-    modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    switchTab(tab || 'login');
+    hideAuthError();
+    document.getElementById('authUsername').value = '';
+    document.getElementById('authPassword').value = '';
   }
 }
 
@@ -102,8 +107,43 @@ function closeLoginModal() {
   const modal = document.getElementById('loginModal');
   if (modal) {
     modal.classList.add('hidden');
-    modal.classList.remove('active');
     document.body.style.overflow = '';
+  }
+}
+
+/**
+ * Switch between Login and Register tabs.
+ */
+function switchTab(tab) {
+  authMode = tab;
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const submitBtn = document.getElementById('modalSubmitBtn');
+  const switchText = document.querySelector('.modal-switch-text');
+
+  hideAuthError();
+
+  if (tab === 'register') {
+    tabLogin.classList.remove('active');
+    tabRegister.classList.add('active');
+    if (submitBtn) submitBtn.textContent = 'Create Account';
+    if (switchText) switchText.innerHTML = 'Already have an account? <a href="#" onclick="switchTab(\'login\'); return false;">Login here</a>';
+  } else {
+    tabLogin.classList.add('active');
+    tabRegister.classList.remove('active');
+    if (submitBtn) submitBtn.textContent = 'Login';
+    if (switchText) switchText.innerHTML = 'Don\'t have an account? <a href="#" onclick="switchTab(\'register\'); return false;">Register here</a>';
+  }
+}
+
+/**
+ * Submit the auth form based on current tab mode.
+ */
+function submitAuthForm() {
+  if (authMode === 'register') {
+    registerUser();
+  } else {
+    loginUser();
   }
 }
 
@@ -112,21 +152,18 @@ function closeLoginModal() {
  */
 function updateAuthUI(userData) {
   const navLogin = document.getElementById('navLogin');
+  const navUserInfo = document.getElementById('navUserInfo');
+  const navUsername = document.getElementById('navUsername');
   const saveBtn = document.getElementById('btnSaveResult');
 
   if (userData) {
-    if (navLogin) {
-      navLogin.textContent = userData.username;
-      navLogin.onclick = logoutUser;
-      navLogin.title = 'Click to logout';
-    }
+    if (navLogin) navLogin.classList.add('hidden');
+    if (navUserInfo) navUserInfo.classList.remove('hidden');
+    if (navUsername) navUsername.textContent = userData.username;
     if (saveBtn) saveBtn.classList.remove('hidden');
   } else {
-    if (navLogin) {
-      navLogin.textContent = 'Login';
-      navLogin.onclick = openLoginModal;
-      navLogin.title = '';
-    }
+    if (navLogin) navLogin.classList.remove('hidden');
+    if (navUserInfo) navUserInfo.classList.add('hidden');
     if (saveBtn) saveBtn.classList.add('hidden');
   }
 }

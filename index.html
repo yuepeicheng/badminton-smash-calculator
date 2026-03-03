@@ -29,24 +29,31 @@
         <a href="index.html" class="nav-link active">Calculator</a>
         <a href="methodology.html" class="nav-link">Methodology</a>
         <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <span id="navUserInfo" class="nav-user-info hidden">
+          <span id="navUsername" class="nav-username"></span>
+          <button class="btn-nav-logout" onclick="logoutUser()">Logout</button>
+        </span>
         <a href="#" class="nav-link" id="navLogin" onclick="openLoginModal(); return false;">Login</a>
       </nav>
     </div>
   </header>
 
-  <!-- Login Modal -->
+  <!-- Login/Register Modal -->
   <div id="loginModal" class="modal-overlay hidden" onclick="if(event.target===this) closeLoginModal()">
     <div class="modal-card">
       <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
-      <h3>Login or Register</h3>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+        <button class="modal-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+      </div>
       <div class="login-form">
-        <input type="text" id="authUsername" class="calc-input" placeholder="Username" />
-        <input type="password" id="authPassword" class="calc-input" placeholder="Password" />
+        <input type="text" id="authUsername" class="calc-input" placeholder="Username" autocomplete="username" />
+        <input type="password" id="authPassword" class="calc-input" placeholder="Password" autocomplete="current-password" />
         <div id="authError" class="auth-error hidden"></div>
-        <div class="login-buttons">
-          <button class="btn-primary" onclick="loginUser()">Login</button>
-          <button class="btn-secondary" onclick="registerUser()">Register</button>
-        </div>
+        <button class="btn-primary btn-modal-submit" id="modalSubmitBtn" onclick="submitAuthForm()">Login</button>
+        <p class="modal-switch-text">
+          Don't have an account? <a href="#" onclick="switchTab('register'); return false;">Register here</a>
+        </p>
       </div>
     </div>
   </div>
