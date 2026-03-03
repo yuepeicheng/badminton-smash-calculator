@@ -1,11 +1,13 @@
 # 🏸 Badminton Smash Calculator
 
-Ever wanted to know your badminton smash speed? How well do you stack up against the pros who hit the shuttle 400+ km/h? But you don't have a speed gun? Well this web tool solves that problem. Using advanced physics research, this tool will accurately measure your badminton smash speed through just a video and just real-time training insights aswell. 
+Ever wanted to know your badminton smash speed? How well do you stack up against the pros who hit the shuttle 400+ km/h? But you don't have a speed gun?
+Well this web tool solves that problem. Using advanced physics research, this tool will accurately measure your badminton smash speed through just a video and just real-time training insights aswell.
+
 If you are curious about any math used (and its limitations), please read the research paper attached.
 
 ## What it does
 
-Upload a video of your smash, and the calculator uses projectile motion equations and calculus-based physics modeling to measure your smash velocity and suggest personalized training improvements. Designed to be as intuitive as it is technically rigorous.
+Upload a video of your smash, and the calculator uses projectile motion equations and calculus-based physics modeling to measure your smash velocity and suggest personalized training improvements. Designed to be as intuitive as it is technically rigorous. The whole process should be streamlined as you enter the tool. Feel free to message me for any questions.
 
 ## Features
 
