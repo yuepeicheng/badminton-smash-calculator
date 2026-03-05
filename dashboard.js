@@ -1,7 +1,6 @@
 // ===== DASHBOARD MODULE =====
 // All data fetched from the Spring Boot backend.
-
-const API_BASE = 'http://localhost:8080';
+// API_BASE is declared in auth.js which loads first.
 
 let progressionChart = null;
 
