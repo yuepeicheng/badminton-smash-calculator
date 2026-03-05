@@ -1,5 +1,7 @@
 // ===== AUTHENTICATION MODULE =====
-// All data stored in localStorage — no backend required.
+// All API calls go to the Spring Boot backend.
+
+const API_BASE = 'http://localhost:8080';
 
 let authMode = 'login'; // 'login' or 'register'
 
@@ -7,12 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
   checkSession();
 });
 
-function checkSession() {
-  const username = localStorage.getItem('username');
-  updateAuthUI(username ? { username } : null);
+async function checkSession() {
+  const sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    updateAuthUI(null);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { 'X-Session-Id': sessionId }
+    });
+    const data = await res.json();
+    if (data.success) {
+      updateAuthUI({ username: data.username });
+    } else {
+      localStorage.removeItem('sessionId');
+      localStorage.removeItem('username');
+      updateAuthUI(null);
+    }
+  } catch {
+    // Backend not reachable — use stored username for UI only
+    const username = localStorage.getItem('username');
+    updateAuthUI(username ? { username } : null);
+  }
 }
 
-function registerUser() {
+async function registerUser() {
   const username = document.getElementById('authUsername').value.trim();
   const password = document.getElementById('authPassword').value;
 
@@ -21,22 +44,29 @@ function registerUser() {
     return;
   }
 
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, displayName: username })
+    });
+    const data = await res.json();
 
-  if (users[username]) {
-    showAuthError('Username already taken');
-    return;
+    if (!data.success) {
+      showAuthError(data.error || 'Registration failed');
+      return;
+    }
+
+    localStorage.setItem('sessionId', data.sessionId);
+    localStorage.setItem('username', data.username);
+    closeLoginModal();
+    updateAuthUI({ username: data.username });
+  } catch {
+    showAuthError('Cannot connect to server. Make sure the backend is running.');
   }
-
-  users[username] = { passwordKey: btoa(username + ':' + password) };
-  localStorage.setItem('users', JSON.stringify(users));
-  localStorage.setItem('username', username);
-
-  closeLoginModal();
-  updateAuthUI({ username });
 }
 
-function loginUser() {
+async function loginUser() {
   const username = document.getElementById('authUsername').value.trim();
   const password = document.getElementById('authPassword').value;
 
@@ -45,20 +75,41 @@ function loginUser() {
     return;
   }
 
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
-  const user = users[username];
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
 
-  if (!user || user.passwordKey !== btoa(username + ':' + password)) {
-    showAuthError('Invalid username or password');
-    return;
+    if (!data.success) {
+      showAuthError(data.error || 'Invalid username or password');
+      return;
+    }
+
+    localStorage.setItem('sessionId', data.sessionId);
+    localStorage.setItem('username', data.username);
+    closeLoginModal();
+    updateAuthUI({ username: data.username });
+  } catch {
+    showAuthError('Cannot connect to server. Make sure the backend is running.');
   }
-
-  localStorage.setItem('username', username);
-  closeLoginModal();
-  updateAuthUI({ username });
 }
 
-function logoutUser() {
+async function logoutUser() {
+  const sessionId = localStorage.getItem('sessionId');
+  if (sessionId) {
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: 'POST',
+        headers: { 'X-Session-Id': sessionId }
+      });
+    } catch {
+      // Ignore network errors on logout
+    }
+  }
+  localStorage.removeItem('sessionId');
   localStorage.removeItem('username');
   updateAuthUI(null);
 }
@@ -142,20 +193,41 @@ function hideAuthError() {
   if (el) { el.textContent = ''; el.classList.add('hidden'); }
 }
 
-function saveSmashResult(speedMps) {
-  const username = localStorage.getItem('username');
-  if (!username) { openLoginModal(); return; }
-
-  const key = 'smashRecords_' + username;
-  const records = JSON.parse(localStorage.getItem(key) || '[]');
-  records.push({ speedMps, recordedAt: new Date().toISOString() });
-  localStorage.setItem(key, JSON.stringify(records));
+async function saveSmashResult(speedMps) {
+  const sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) { openLoginModal(); return; }
 
   const saveBtn = document.getElementById('btnSaveResult');
-  if (saveBtn) {
-    const orig = saveBtn.textContent;
-    saveBtn.textContent = 'Saved!';
-    saveBtn.style.background = 'var(--success)';
-    setTimeout(() => { saveBtn.textContent = orig; saveBtn.style.background = ''; }, 2000);
+  const origText = saveBtn ? saveBtn.textContent : 'Save Result';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/records`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': sessionId
+      },
+      body: JSON.stringify({ speedMps })
+    });
+    const data = await res.json();
+
+    if (saveBtn) {
+      if (data.success) {
+        saveBtn.textContent = 'Saved!';
+        saveBtn.style.background = 'var(--success)';
+      } else {
+        saveBtn.textContent = 'Error saving';
+        saveBtn.style.background = '#ef4444';
+      }
+      setTimeout(() => {
+        saveBtn.textContent = origText;
+        saveBtn.style.background = '';
+      }, 2000);
+    }
+  } catch {
+    if (saveBtn) {
+      saveBtn.textContent = 'Server offline';
+      setTimeout(() => { saveBtn.textContent = origText; }, 2000);
+    }
   }
 }
