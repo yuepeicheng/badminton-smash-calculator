@@ -3,7 +3,6 @@ package com.smashcalc.controller;
 import com.smashcalc.model.SmashRecord;
 import com.smashcalc.model.User;
 import com.smashcalc.service.AuthService;
-import com.smashcalc.service.LeaderboardService;
 import com.smashcalc.service.SmashService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +18,10 @@ public class SmashController {
 
     private final SmashService smashService;
     private final AuthService authService;
-    private final LeaderboardService leaderboardService;
 
-    public SmashController(SmashService smashService, AuthService authService, LeaderboardService leaderboardService) {
+    public SmashController(SmashService smashService, AuthService authService) {
         this.smashService = smashService;
         this.authService = authService;
-        this.leaderboardService = leaderboardService;
     }
 
     @PostMapping
@@ -41,16 +38,12 @@ public class SmashController {
             double speedMps = ((Number) body.get("speedMps")).doubleValue();
             SmashRecord record = smashService.saveSmash(user.getId(), speedMps);
 
-            double speedKmh = speedMps * 3.6;
-            int projectedRank = leaderboardService.getRankForSpeed(speedKmh);
-
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("id", record.getId());
             response.put("speedMps", record.getSpeedMps());
             response.put("speedKmh", record.getSpeedKmh());
             response.put("recordedAt", record.getRecordedAt());
-            response.put("projectedRank", projectedRank);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));

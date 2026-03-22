@@ -1,6 +1,6 @@
 package com.smashcalc.service;
 
-import com.smashcalc.algorithm.BinarySearch;
+import com.smashcalc.algorithm.LeaderboardSearch;
 import com.smashcalc.algorithm.MergeSortAlgorithm;
 import com.smashcalc.model.LeaderboardEntry;
 import com.smashcalc.repository.SmashRecordRepository;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /**
  * Handles leaderboard logic using custom sorting and searching algorithms.
- * This is where the hand-written merge sort and binary search are used.
+ * This is where the hand-written merge sort and linear search are used.
  */
 @Service
 public class LeaderboardService {
@@ -38,28 +38,18 @@ public class LeaderboardService {
     }
 
     /**
-     * Find a specific user's rank using binary search on the sorted leaderboard.
+     * Find a specific user's rank by scanning the sorted leaderboard.
      * Returns the 1-based rank, or -1 if user has no records.
      */
     public int getUserRank(String username) {
         ArrayList<LeaderboardEntry> leaderboard = getLeaderboard();
 
-        int index = BinarySearch.findByUsername(leaderboard, username);
+        int index = LeaderboardSearch.findByUsername(leaderboard, username);
 
         if (index == -1) {
             return -1;
         }
 
         return index + 1;
-    }
-
-    /**
-     * Find where a given speed would rank on the leaderboard using binary search.
-     * Returns the 1-based projected rank (e.g. 1 = fastest).
-     */
-    public int getRankForSpeed(double speedKmh) {
-        ArrayList<LeaderboardEntry> sorted = getLeaderboard();
-        int insertionPoint = BinarySearch.findRankForSpeed(sorted, speedKmh);
-        return insertionPoint + 1;
     }
 }
