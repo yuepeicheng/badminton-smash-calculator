@@ -45,17 +45,5 @@ public class SmashService {
         return recordRepository.findByUserId(userId);
     }
 
-    /**
-     * Delete a smash record by ID.
-     */
-    public void deleteRecord(int recordId) {
-        recordRepository.deleteById(recordId);
-    }
 
-    /**
-     * Find a record by ID.
-     */
-    public SmashRecord findById(int id) {
-        return recordRepository.findById(id);
-    }
 }

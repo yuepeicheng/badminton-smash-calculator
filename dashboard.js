@@ -39,6 +39,7 @@ async function initDashboard() {
 
     loadProgression(sessionId);
     loadLeaderboard(data.username);
+    loadUserRank(data.username);
   } catch {
     // Backend unreachable
     document.getElementById('dashboardLogin').classList.remove('hidden');
@@ -122,6 +123,24 @@ function renderChart(records) {
       }
     }
   });
+}
+
+/**
+ * Fetch and display the current user's leaderboard rank above the table.
+ */
+async function loadUserRank(username) {
+  try {
+    const res = await fetch(`${API_BASE}/api/leaderboard/rank/${encodeURIComponent(username)}`);
+    const data = await res.json();
+    const el = document.getElementById('yourRankMsg');
+    if (!el) return;
+    if (data.success) {
+      el.textContent = `Your current rank: #${data.rank}`;
+      el.classList.remove('hidden');
+    }
+  } catch {
+    // Silently ignore — rank display is non-critical
+  }
 }
 
 /**

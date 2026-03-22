@@ -1,9 +1,5 @@
 package com.smashcalc.model;
 
-/**
- * Abstract base class for all user types.
- * Demonstrates: inheritance (subclasses extend this), encapsulation (private fields).
- */
 public abstract class User {
     private int id;
     private String username;
@@ -19,7 +15,6 @@ public abstract class User {
         this.displayName = displayName;
     }
 
-    // Abstract methods — subclasses must implement (polymorphism)
     public abstract String getUserType();
     public abstract boolean canDeleteRecords(int targetUserId);
 

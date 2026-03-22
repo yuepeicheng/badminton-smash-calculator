@@ -213,7 +213,8 @@ async function saveSmashResult(speedMps) {
 
     if (saveBtn) {
       if (data.success) {
-        saveBtn.textContent = 'Saved!';
+        const rankMsg = data.projectedRank != null ? ` You rank #${data.projectedRank} on the leaderboard!` : '';
+        saveBtn.textContent = `Saved!${rankMsg}`;
         saveBtn.style.background = 'var(--success)';
       } else {
         saveBtn.textContent = 'Error saving';
@@ -222,7 +223,7 @@ async function saveSmashResult(speedMps) {
       setTimeout(() => {
         saveBtn.textContent = origText;
         saveBtn.style.background = '';
-      }, 2000);
+      }, 3000);
     }
   } catch {
     if (saveBtn) {

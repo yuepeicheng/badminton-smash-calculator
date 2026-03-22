@@ -1366,6 +1366,13 @@ body {
   padding: 2rem;
 }
 
+.your-rank-message {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+
 /* ===== LEADERBOARD TABLE ===== */
 .leaderboard-table {
   width: 100%;

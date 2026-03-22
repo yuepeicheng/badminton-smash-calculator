@@ -1,9 +1,5 @@
 package com.smashcalc.model;
 
-/**
- * Regular user — can only delete their own records.
- * Demonstrates: inheritance (extends User), polymorphism (overrides abstract methods).
- */
 public class RegularUser extends User {
 
     public RegularUser() {

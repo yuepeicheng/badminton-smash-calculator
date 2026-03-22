@@ -26,15 +26,12 @@ public class LeaderboardService {
      * Each user appears once with their best (fastest) smash.
      */
     public ArrayList<LeaderboardEntry> getLeaderboard() {
-        // 1. Fetch raw leaderboard data from database (unsorted)
         ArrayList<LeaderboardEntry> entries = recordRepository.getLeaderboardData();
-
-        // 2. Sort using our hand-written merge sort algorithm (NOT Collections.sort)
+        // NOT Collections.sort
         entries = MergeSortAlgorithm.sort(entries);
 
-        // 3. Assign rank numbers after sorting
         for (int i = 0; i < entries.size(); i++) {
-            entries.get(i).setRank(i + 1); // 1-based rank
+            entries.get(i).setRank(i + 1);
         }
 
         return entries;
@@ -47,13 +44,22 @@ public class LeaderboardService {
     public int getUserRank(String username) {
         ArrayList<LeaderboardEntry> leaderboard = getLeaderboard();
 
-        // Use binary search to find the user's position
         int index = BinarySearch.findByUsername(leaderboard, username);
 
         if (index == -1) {
-            return -1; // User not found in leaderboard
+            return -1;
         }
 
-        return index + 1; // Convert 0-based index to 1-based rank
+        return index + 1;
+    }
+
+    /**
+     * Find where a given speed would rank on the leaderboard using binary search.
+     * Returns the 1-based projected rank (e.g. 1 = fastest).
+     */
+    public int getRankForSpeed(double speedKmh) {
+        ArrayList<LeaderboardEntry> sorted = getLeaderboard();
+        int insertionPoint = BinarySearch.findRankForSpeed(sorted, speedKmh);
+        return insertionPoint + 1;
     }
 }

@@ -65,14 +65,6 @@ public class SmashRecordRepository {
     }
 
     /**
-     * Delete a record by ID.
-     */
-    public void deleteById(int id) {
-        String sql = "DELETE FROM smash_records WHERE id = ?";
-        jdbcTemplate.update(sql, id);
-    }
-
-    /**
      * Find a record by ID.
      */
     public SmashRecord findById(int id) {
