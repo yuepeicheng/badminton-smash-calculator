@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
       outMph: document.getElementById('outMph'),
       outNotes: document.getElementById('outNotes'),
       resultCard: document.getElementById('resultCard'),
-      errorBox: document.getElementById('error')
+      errorBox: document.getElementById('error'),
+      warningBox: document.getElementById('warning')
     };
 
     // Check existence of required elements
@@ -49,6 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function hideError() {
       el.errorBox.textContent = '';
       el.errorBox.classList.add('hidden');
+    }
+    function showWarning(msg) {
+      el.warningBox.innerHTML = msg;
+      el.warningBox.classList.remove('hidden');
+    }
+    function hideWarning() {
+      el.warningBox.innerHTML = '';
+      el.warningBox.classList.add('hidden');
     }
     function showResults() {
       el.resultCard.classList.remove('hidden');
@@ -78,20 +87,36 @@ document.addEventListener('DOMContentLoaded', () => {
     el.btnCalc.addEventListener('click', () => {
       try {
         hideError();
+        hideWarning();
 
         const x = Number(el.distance.value);
         const t = Number(el.time.value);
         const theta = Number(el.angle.value);
-        const kx = defaultKx; // Use the default constant
+        const kx = defaultKx;
 
-        if (![x,t,theta].every(v => isFinite(v))) {
+        // --- Hard validation (block calculation) ---
+        if (el.distance.value.trim() === '' || el.time.value.trim() === '' || el.angle.value.trim() === '') {
+          showError('Please fill in all three fields.');
+          hideResults();
+          return;
+        }
+        if (![x, t, theta].every(v => isFinite(v))) {
           showError('Please enter valid numeric values for all fields.');
           hideResults();
-          console.log('Invalid numeric inputs:', {x,t,theta});
+          return;
+        }
+        if (x <= 0) {
+          showError('Distance must be greater than 0.');
+          hideResults();
           return;
         }
         if (t <= 0) {
-          showError('Time must be > 0 seconds.');
+          showError('Time must be greater than 0.');
+          hideResults();
+          return;
+        }
+        if (theta < 0 || theta >= 90) {
+          showError('Angle must be between 0° and 90° (exclusive).');
           hideResults();
           return;
         }
@@ -120,12 +145,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showResults();
 
+        // --- Soft warnings (show result but flag unusual inputs/outputs) ---
+        const warnings = [];
+        if (t > 2) {
+          warnings.push(`Time ${fmt(t,3)}s exceeds 2s — typical badminton smashes travel for well under 1 second.`);
+        }
+        if (x >= 10) {
+          warnings.push(`Distance ${fmt(x,2)}m is unusually long — the full court is only 13.4m end-to-end.`);
+        }
+        if (theta > 45) {
+          warnings.push(`Angle ${fmt(theta,1)}° is very steep — badminton smashes are typically 10°–30° downward.`);
+        }
+        if (v_kmh > 500) {
+          warnings.push(`Calculated speed ${fmt(v_kmh,1)} km/h exceeds the world record (~565 km/h). Check your inputs.`);
+        }
+        if (v_kmh < 10) {
+          warnings.push(`Calculated speed ${fmt(v_kmh,1)} km/h is unrealistically slow for a badminton smash.`);
+        }
+
+        if (warnings.length > 0) {
+          showWarning('⚠ Unusual inputs detected:<ul style="margin:0.5rem 0 0 1.25rem">' +
+            warnings.map(w => `<li>${w}</li>`).join('') + '</ul>');
+        }
+
         // Show save button if user is logged in
         const sessionId = localStorage.getItem('sessionId');
         const saveBtn = document.getElementById('btnSaveResult');
         if (sessionId && saveBtn) {
           saveBtn.classList.remove('hidden');
-          // Store the speed for the save button
           saveBtn.setAttribute('data-speed', v0);
           saveBtn.onclick = () => saveSmashResult(v0);
         }
@@ -142,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.time.value = '';
       el.angle.value = '';
       hideError();
+      hideWarning();
       hideResults();
       console.log('Fields cleared.');
     });
