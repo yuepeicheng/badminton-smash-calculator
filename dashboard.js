@@ -133,12 +133,6 @@ function renderChart(records, timeframe) {
     return { x: new Date(year, month - 1, day), y: Math.round(r.speedKmh * 100) / 100 };
   });
 
-  // Choose x-axis tick granularity based on timeframe
-  const timeUnit = timeframe === 'week' ? 'day'
-    : timeframe === 'month' ? 'week'
-    : timeframe === 'year' ? 'month'
-    : 'month';
-
   if (progressionChart) {
     progressionChart.destroy();
   }
@@ -147,11 +141,10 @@ function renderChart(records, timeframe) {
     type: 'line',
     data: {
       datasets: [{
-        label: 'Smash Speed (km/h)',
         data: dataPoints,
         borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
+        backgroundColor: 'transparent',
+        fill: false,
         tension: 0,
         pointBackgroundColor: '#3b82f6',
         pointBorderColor: '#fff',
@@ -163,23 +156,25 @@ function renderChart(records, timeframe) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: {
-          labels: { color: '#cbd5e1', font: { family: 'Inter' } }
-        }
+        legend: { display: false }
       },
       scales: {
         x: {
           type: 'time',
           time: {
-            unit: timeUnit,
             tooltipFormat: 'MMM d, yyyy',
             displayFormats: {
               day: 'MMM d',
               week: 'MMM d',
-              month: 'MMM yyyy'
+              month: 'MMM yyyy',
+              year: 'yyyy'
             }
           },
-          ticks: { color: '#94a3b8' },
+          ticks: {
+            color: '#94a3b8',
+            maxTicksLimit: 8,
+            source: 'auto'
+          },
           grid: { color: 'rgba(51, 65, 85, 0.5)' }
         },
         y: {
