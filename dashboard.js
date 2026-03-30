@@ -170,11 +170,7 @@ function renderChart(records, timeframe) {
               year: 'yyyy'
             }
           },
-          ticks: {
-            color: '#94a3b8',
-            maxTicksLimit: 8,
-            source: 'auto'
-          },
+          ticks: { display: false },
           grid: { color: 'rgba(51, 65, 85, 0.5)' }
         },
         y: {
