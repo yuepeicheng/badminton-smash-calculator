@@ -49,6 +49,12 @@
         <section class="dashboard-card">
           <h3 class="card-title">Speed Progression</h3>
           <p class="card-description">Your smash speed over time</p>
+          <div id="timeframeButtons" class="timeframe-buttons">
+            <button data-tf="week">Week</button>
+            <button data-tf="month">Month</button>
+            <button data-tf="year">Year</button>
+            <button data-tf="all" class="active">All</button>
+          </div>
           <div class="chart-container">
             <canvas id="progressionChart"></canvas>
           </div>

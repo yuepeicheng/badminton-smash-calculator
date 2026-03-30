@@ -3,9 +3,28 @@
 // API_BASE is declared in auth.js which loads first.
 
 let progressionChart = null;
+let allRecords = [];
+let activeTimeframe = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
   initDashboard();
+
+  document.getElementById('timeframeButtons').addEventListener('click', e => {
+    const btn = e.target.closest('[data-tf]');
+    if (!btn) return;
+    activeTimeframe = btn.dataset.tf;
+    document.querySelectorAll('#timeframeButtons [data-tf]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const deduped = deduplicateByDay(allRecords);
+    const filtered = filterByTimeframe(deduped, activeTimeframe);
+    if (filtered.length === 0) {
+      document.getElementById('noDataMsg').classList.remove('hidden');
+      if (progressionChart) { progressionChart.destroy(); progressionChart = null; }
+    } else {
+      document.getElementById('noDataMsg').classList.add('hidden');
+      renderChart(filtered, activeTimeframe);
+    }
+  });
 });
 
 /**
@@ -61,22 +80,60 @@ async function loadProgression(sessionId) {
       return;
     }
 
+    allRecords = records;
+    const deduped = deduplicateByDay(allRecords);
+    const filtered = filterByTimeframe(deduped, activeTimeframe);
     document.getElementById('noDataMsg').classList.add('hidden');
-    renderChart(records);
+    renderChart(filtered, activeTimeframe);
   } catch {
     document.getElementById('noDataMsg').classList.remove('hidden');
   }
 }
 
 /**
- * Render the Chart.js line chart.
+ * Collapse same-day records, keeping the highest speed per day.
+ * Returns [{day: 'YYYY-MM-DD', speedKmh: number}] sorted ascending.
  */
-function renderChart(records) {
+function deduplicateByDay(records) {
+  const byDay = {};
+  for (const r of records) {
+    const day = r.date.slice(0, 10);
+    if (!byDay[day] || r.speedKmh > byDay[day]) {
+      byDay[day] = r.speedKmh;
+    }
+  }
+  return Object.keys(byDay).sort().map(day => ({ day, speedKmh: byDay[day] }));
+}
+
+/**
+ * Filter deduped records to a timeframe window.
+ */
+function filterByTimeframe(dedupedRecords, timeframe) {
+  if (timeframe === 'all') return dedupedRecords;
+  const now = new Date();
+  const cutoff = new Date(now);
+  if (timeframe === 'week')  cutoff.setDate(now.getDate() - 7);
+  if (timeframe === 'month') cutoff.setMonth(now.getMonth() - 1);
+  if (timeframe === 'year')  cutoff.setFullYear(now.getFullYear() - 1);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  return dedupedRecords.filter(r => r.day >= cutoffStr);
+}
+
+/**
+ * Render the Chart.js line chart.
+ * @param {Array<{day: string, speedKmh: number}>} records - deduped+filtered records
+ * @param {string} timeframe - active timeframe ('week'|'month'|'year'|'all')
+ */
+function renderChart(records, timeframe) {
   const ctx = document.getElementById('progressionChart').getContext('2d');
 
   const labels = records.map(r => {
-    const d = new Date(r.date);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const [year, month, day] = r.day.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    const opts = timeframe === 'all'
+      ? { month: 'short', day: 'numeric', year: '2-digit' }
+      : { month: 'short', day: 'numeric' };
+    return d.toLocaleDateString('en-US', opts);
   });
   const speeds = records.map(r => Math.round(r.speedKmh * 100) / 100);
 

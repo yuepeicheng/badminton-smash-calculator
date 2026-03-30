@@ -632,11 +632,11 @@ function initAngleTool() {
 
   // Calculate angle (always 0-90 degrees acute angle between lines A-B and B-C)
   function calculateAngle() {
-    // Vector from A to B (base line)
+    // Vector from A to B
     const baseVecX = baseLineEnd.x - baseLineStart.x;
     const baseVecY = baseLineEnd.y - baseLineStart.y;
 
-    // Vector from B to C (angle line)
+    // Vector from B to C
     const angleVecX = angleLineEnd.x - baseLineEnd.x;
     const angleVecY = angleLineEnd.y - baseLineEnd.y;
 
@@ -645,10 +645,9 @@ function initAngleTool() {
     const baseMag = Math.sqrt(baseVecX * baseVecX + baseVecY * baseVecY);
     const angleMag = Math.sqrt(angleVecX * angleVecX + angleVecY * angleVecY);
 
-    // Calculate angle in radians then convert to degrees
+    // Convert to degrees
     let angle = Math.acos(dotProduct / (baseMag * angleMag)) * (180 / Math.PI);
 
-    // Ensure we always return an acute angle (0-90 degrees)
     if (angle > 90) {
       angle = 180 - angle;
     }
@@ -803,7 +802,6 @@ function initAngleTool() {
   canvas.addEventListener('mousemove', (e) => {
     const mouse = getMousePos(e);
 
-    // Update cursor
     if (isNearPoint(mouse, baseLineStart) ||
         isNearPoint(mouse, { x: baseLineEnd.x, y: baseLineStart.y }) ||
         isNearPoint(mouse, angleLineEnd)) {
@@ -814,23 +812,19 @@ function initAngleTool() {
 
     if (dragging) {
       if (dragging === 'baseStart') {
-        // Move entire horizontal line
+        // Move horizontal line
         const deltaY = mouse.y - baseLineStart.y;
         baseLineStart = mouse;
-        baseLineEnd.y = baseLineStart.y; // Keep horizontal
+        baseLineEnd.y = baseLineStart.y;
         angleLineEnd.y += deltaY;
       } else if (dragging === 'baseEnd') {
-        // Move the end point, but keep it horizontal
+        // Move end point
         baseLineEnd.x = mouse.x;
-        baseLineEnd.y = baseLineStart.y; // Force horizontal
+        baseLineEnd.y = baseLineStart.y;
       } else if (dragging === 'angleEnd') {
-        // Constrain angle line endpoint
-        // Only allow movement below the horizontal line (positive Y direction)
-        angleLineEnd.x = mouse.x;
-        angleLineEnd.y = Math.max(baseLineStart.y, mouse.y); // Force it to be at or below horizontal line
 
-        // No need to constrain further - full 0-90 degrees is allowed
-        // The angle is always between horizontal (0°) and vertical (90°) as long as dy >= 0
+        angleLineEnd.x = mouse.x;
+        angleLineEnd.y = Math.max(baseLineStart.y, mouse.y);
       }
       draw();
     }

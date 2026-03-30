@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 public class MergeSortAlgorithm {
     public static ArrayList<LeaderboardEntry> sort(ArrayList<LeaderboardEntry> list) {
-        // Base case
         if (list.size() <= 1) {
             return list;
         }
@@ -37,7 +36,6 @@ public class MergeSortAlgorithm {
                 j++;
             }
         }
-
         while (i < left.size()) {
             result.add(left.get(i));
             i++;

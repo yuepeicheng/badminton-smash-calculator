@@ -27,7 +27,6 @@ public class LeaderboardService {
      */
     public ArrayList<LeaderboardEntry> getLeaderboard() {
         ArrayList<LeaderboardEntry> entries = recordRepository.getLeaderboardData();
-        // NOT Collections.sort
         entries = MergeSortAlgorithm.sort(entries);
 
         for (int i = 0; i < entries.size(); i++) {
