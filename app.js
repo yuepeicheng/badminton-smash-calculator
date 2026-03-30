@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
       outMps: document.getElementById('outMps'),
       outKmh: document.getElementById('outKmh'),
       outMph: document.getElementById('outMph'),
-      outNotes: document.getElementById('outNotes'),
       resultCard: document.getElementById('resultCard'),
       errorBox: document.getElementById('error'),
       warningBox: document.getElementById('warning')
@@ -138,10 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         el.outMps.textContent = `${fmt(v0,3)} m/s`;
         el.outKmh.textContent = `${fmt(v_kmh,2)} km/h`;
         el.outMph.textContent = `${fmt(v_mph,2)} mph`;
-        el.outNotes.innerHTML = `
-          <strong>Notes:</strong> numerator = exp(kₓ·x) − 1 = ${fmt(res.numerator,4)}; cos(θ) = ${fmt(res.cosTheta,4)}.
-          Results sensitive to kₓ and θ errors.
-        `;
 
         showResults();
 
@@ -218,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Highlight the distance input briefly with modern animation
           el.distance.style.transition = 'all 0.3s ease';
           el.distance.style.borderColor = 'var(--accent)';
-          el.distance.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+          el.distance.style.boxShadow = '0 0 0 3px rgba(255, 149, 0, 0.2)';
 
           setTimeout(() => {
             el.distance.style.borderColor = '';
@@ -394,7 +389,7 @@ function initVideoAnalysis() {
       // Highlight the time input briefly
       timeInput.style.transition = 'all 0.3s ease';
       timeInput.style.borderColor = 'var(--accent)';
-      timeInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+      timeInput.style.boxShadow = '0 0 0 3px rgba(255, 149, 0, 0.2)';
 
       setTimeout(() => {
         timeInput.style.borderColor = '';
@@ -672,7 +667,7 @@ function initAngleTool() {
     ctx.lineCap = 'round';
 
     // Draw base line (horizontal reference) - force it to be horizontal
-    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeStyle = '#FF9500';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(baseLineStart.x, baseLineStart.y);
@@ -680,7 +675,7 @@ function initAngleTool() {
     ctx.stroke();
 
     // Draw angle line (adjustable, constrained to go downward)
-    ctx.strokeStyle = '#60a5fa';
+    ctx.strokeStyle = '#FFB340';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(baseLineEnd.x, baseLineStart.y);
@@ -714,8 +709,8 @@ function initAngleTool() {
     const anticlockwise = angleVec.y < 0;
 
     // Draw the inside (acute/interior) arc
-    ctx.strokeStyle = '#10b981';
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+    ctx.strokeStyle = '#FF9500';
+    ctx.fillStyle = 'rgba(255, 149, 0, 0.15)';
     ctx.lineWidth = 3;
 
     ctx.beginPath();
@@ -759,9 +754,9 @@ function initAngleTool() {
       ctx.fillText(label, point.x, point.y - 15);
     };
 
-    drawPoint(baseLineStart, '#3b82f6', 'A');
-    drawPoint({ x: baseLineEnd.x, y: baseLineStart.y }, '#10b981', 'B');
-    drawPoint(angleLineEnd, '#60a5fa', 'C');
+    drawPoint(baseLineStart, '#FF9500', 'A');
+    drawPoint({ x: baseLineEnd.x, y: baseLineStart.y }, '#FF9500', 'B');
+    drawPoint(angleLineEnd, '#FFB340', 'C');
 
     // Update angle display
     currentAngle = calculateAngle();
@@ -848,7 +843,7 @@ function initAngleTool() {
       // Highlight the angle input briefly
       angleInput.style.transition = 'all 0.3s ease';
       angleInput.style.borderColor = 'var(--accent)';
-      angleInput.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+      angleInput.style.boxShadow = '0 0 0 3px rgba(255, 149, 0, 0.2)';
 
       setTimeout(() => {
         angleInput.style.borderColor = '';

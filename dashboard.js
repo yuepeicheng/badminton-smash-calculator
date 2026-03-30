@@ -142,11 +142,11 @@ function renderChart(records, timeframe) {
     data: {
       datasets: [{
         data: dataPoints,
-        borderColor: '#3b82f6',
+        borderColor: '#FF9500',
         backgroundColor: 'transparent',
         fill: false,
         tension: 0,
-        pointBackgroundColor: '#3b82f6',
+        pointBackgroundColor: '#FF9500',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         pointRadius: 5
@@ -171,14 +171,14 @@ function renderChart(records, timeframe) {
             }
           },
           ticks: { display: false },
-          grid: { color: 'rgba(51, 65, 85, 0.5)' }
+          grid: { color: 'rgba(58, 58, 58, 0.8)' }
         },
         y: {
           min: 50,
           max: 400,
-          ticks: { color: '#94a3b8' },
-          grid: { color: 'rgba(51, 65, 85, 0.5)' },
-          title: { display: true, text: 'Speed (km/h)', color: '#94a3b8' }
+          ticks: { color: '#808080' },
+          grid: { color: 'rgba(58, 58, 58, 0.8)' },
+          title: { display: true, text: 'Speed (km/h)', color: '#808080' }
         }
       }
     }
