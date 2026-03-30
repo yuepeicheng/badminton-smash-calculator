@@ -127,15 +127,17 @@ function filterByTimeframe(dedupedRecords, timeframe) {
 function renderChart(records, timeframe) {
   const ctx = document.getElementById('progressionChart').getContext('2d');
 
-  const labels = records.map(r => {
+  // Use {x: Date, y: speed} so Chart.js time scale positions points by real date
+  const dataPoints = records.map(r => {
     const [year, month, day] = r.day.split('-').map(Number);
-    const d = new Date(year, month - 1, day);
-    const opts = timeframe === 'all'
-      ? { month: 'short', day: 'numeric', year: '2-digit' }
-      : { month: 'short', day: 'numeric' };
-    return d.toLocaleDateString('en-US', opts);
+    return { x: new Date(year, month - 1, day), y: Math.round(r.speedKmh * 100) / 100 };
   });
-  const speeds = records.map(r => Math.round(r.speedKmh * 100) / 100);
+
+  // Choose x-axis tick granularity based on timeframe
+  const timeUnit = timeframe === 'week' ? 'day'
+    : timeframe === 'month' ? 'week'
+    : timeframe === 'year' ? 'month'
+    : 'month';
 
   if (progressionChart) {
     progressionChart.destroy();
@@ -144,14 +146,13 @@ function renderChart(records, timeframe) {
   progressionChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [{
         label: 'Smash Speed (km/h)',
-        data: speeds,
+        data: dataPoints,
         borderColor: '#3b82f6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         fill: true,
-        tension: 0.3,
+        tension: 0,
         pointBackgroundColor: '#3b82f6',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
@@ -168,10 +169,22 @@ function renderChart(records, timeframe) {
       },
       scales: {
         x: {
+          type: 'time',
+          time: {
+            unit: timeUnit,
+            tooltipFormat: 'MMM d, yyyy',
+            displayFormats: {
+              day: 'MMM d',
+              week: 'MMM d',
+              month: 'MMM yyyy'
+            }
+          },
           ticks: { color: '#94a3b8' },
           grid: { color: 'rgba(51, 65, 85, 0.5)' }
         },
         y: {
+          min: 50,
+          max: 400,
           ticks: { color: '#94a3b8' },
           grid: { color: 'rgba(51, 65, 85, 0.5)' },
           title: { display: true, text: 'Speed (km/h)', color: '#94a3b8' }
