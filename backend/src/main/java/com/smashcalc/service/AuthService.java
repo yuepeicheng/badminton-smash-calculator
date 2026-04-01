@@ -70,10 +70,6 @@ public class AuthService {
         return sessionId;
     }
 
-    /**
-     * Get user from session ID. Checks the HashMap cache first.
-     * Returns null if session is invalid.
-     */
     public User getUserFromSession(String sessionId) {
         if (sessionId == null || sessionId.isEmpty()) {
             return null;
@@ -87,9 +83,6 @@ public class AuthService {
         return userRepository.findById(userId);
     }
 
-    /**
-     * Logout: remove session from cache.
-     */
     public void logout(String sessionId) {
         activeSessions.remove(sessionId);
     }

@@ -1,6 +1,5 @@
 package com.smashcalc.service;
 
-import com.smashcalc.algorithm.LeaderboardSearch;
 import com.smashcalc.algorithm.MergeSortAlgorithm;
 import com.smashcalc.model.LeaderboardEntry;
 import com.smashcalc.repository.SmashRecordRepository;
@@ -36,19 +35,4 @@ public class LeaderboardService {
         return entries;
     }
 
-    /**
-     * Find a specific user's rank by scanning the sorted leaderboard.
-     * Returns the 1-based rank, or -1 if user has no records.
-     */
-    public int getUserRank(String username) {
-        ArrayList<LeaderboardEntry> leaderboard = getLeaderboard();
-
-        int index = LeaderboardSearch.findByUsername(leaderboard, username);
-
-        if (index == -1) {
-            return -1;
-        }
-
-        return index + 1;
-    }
 }

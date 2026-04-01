@@ -44,23 +44,4 @@ public class LeaderboardController {
         return ResponseEntity.ok(result);
     }
 
-    /**
-     * GET /api/leaderboard/rank/{username}
-     * Get a specific user's rank.
-     */
-    @GetMapping("/rank/{username}")
-    public ResponseEntity<Map<String, Object>> getUserRank(@PathVariable String username) {
-        int rank = leaderboardService.getUserRank(username);
-
-        Map<String, Object> response = new HashMap<>();
-        if (rank == -1) {
-            response.put("success", false);
-            response.put("error", "User has no smash records");
-            return ResponseEntity.ok(response);
-        }
-
-        response.put("success", true);
-        response.put("rank", rank);
-        return ResponseEntity.ok(response);
-    }
 }

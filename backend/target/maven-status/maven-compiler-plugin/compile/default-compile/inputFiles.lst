@@ -3,11 +3,11 @@
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/model/User.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/controller/AuthController.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/model/SmashRecord.java
+/Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/algorithm/LeaderboardSearch.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/controller/SmashController.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/repository/SmashRecordRepository.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/service/SmashService.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/algorithm/MergeSortAlgorithm.java
-/Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/algorithm/BinarySearch.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/model/RegularUser.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/repository/UserRepository.java
 /Users/pyue26/Downloads/badminton-smash-calculator/backend/src/main/java/com/smashcalc/SmashCalcApplication.java
