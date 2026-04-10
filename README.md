@@ -16,7 +16,3 @@ Upload a video of your smash, and the calculator uses projectile motion equation
 - 📊 **Data visualization** — graphs that make smash mechanics easy to read at a glance
 - 🎯 **Training suggestions** — personalized feedback based on your results
 - 🖥️ **Clean, accessible UI** — iterated through 8+ design versions based on user testing
-
-## Built with
-
-HTML · CSS · JavaScript
